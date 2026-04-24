@@ -1,7 +1,7 @@
 [build]
   base    = "enzo-reports/frontend"
   command = "npm run build"
-  publish = "enzo-reports/frontend/dist"
+  publish = "dist"
 
 [[redirects]]
   from   = "/api-shifer/*"
