@@ -1,22 +1,20 @@
 [build]
-  command   = "npm run build"
-  publish   = "dist"
+  base    = "enzo-reports/frontend"
+  command = "npm run build"
+  publish = "enzo-reports/frontend/dist"
 
-# Proxy /api-shifer/* → Shifer backend (must come BEFORE /api/*)
 [[redirects]]
   from   = "/api-shifer/*"
   to     = "https://backend-greymix.bis-apps.com/:splat"
   status = 200
   force  = true
 
-# Proxy /api/* → Cement backend
 [[redirects]]
   from   = "/api/*"
   to     = "https://backend-greymix-sement.bis-apps.com/api/:splat"
   status = 200
   force  = true
 
-# SPA fallback — all other routes serve index.html
 [[redirects]]
   from   = "/*"
   to     = "/index.html"
