@@ -1,0 +1,3 @@
+/api-shifer/*  https://backend-greymix.bis-apps.com/:splat  200
+/api/*         https://backend-greymix-sement.bis-apps.com/api/:splat  200
+/*             /index.html  200

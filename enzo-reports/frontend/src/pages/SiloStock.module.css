@@ -1,0 +1,76 @@
+.page { display: flex; flex-direction: column; gap: 18px; animation: fadeUp 0.2s ease; }
+.header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.title { font-size: 1.2rem; font-weight: 700; color: var(--grey-900); }
+.sub { font-size: 0.8rem; color: var(--grey-600); margin-top: 3px; }
+.sub strong { color: var(--grey-900); }
+.refreshBtn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius-md);
+  background: #fff; border: 1px solid var(--grey-300);
+  color: var(--grey-700); font-size: 0.8rem; font-weight: 500; transition: var(--t-fast);
+}
+.refreshBtn:hover:not(:disabled) { background: var(--grey-100); }
+.refreshBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+.spin { animation: spin 0.8s linear infinite; }
+
+/* Silos grid */
+.silosGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+
+.siloCard {
+  background: #fff;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--t-fast);
+}
+.siloCard:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.tank { flex-shrink: 0; }
+.tankIcon {
+  width: 52px; height: 72px;
+  border: 2px solid;
+  border-radius: 8px 8px 4px 4px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.tankFill {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  transition: height 0.5s ease;
+}
+
+.siloInfo { flex: 1; min-width: 0; }
+.siloName { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+.siloTotal { font-size: 1.1rem; font-weight: 800; color: var(--grey-900); margin-bottom: 10px; }
+.siloItems { display: flex; flex-direction: column; gap: 6px; }
+.siloItem { padding: 6px 8px; background: var(--grey-50); border-radius: var(--radius-sm); }
+.siloItemName { font-size: 0.75rem; font-weight: 600; color: var(--grey-800); }
+.siloItemCode { font-size: 0.65rem; color: var(--grey-500); margin: 1px 0; }
+.siloItemQty { font-size: 0.78rem; font-weight: 700; color: var(--grey-900); }
+
+/* Table */
+.tableCard {
+  background: #fff;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.tableTitle { padding: 10px 16px; background: var(--grey-50); border-bottom: 1px solid var(--grey-200); font-size: 0.78rem; font-weight: 600; color: var(--grey-700); }
+.tableWrap { overflow-x: auto; }
+.table { width: 100%; font-size: 0.82rem; border-collapse: collapse; }
+.table thead { background: var(--grey-50); }
+.table thead th { padding: 9px 14px; text-align: left; font-size: 0.7rem; font-weight: 700; color: var(--grey-600); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--grey-300); }
+.table tbody tr { border-bottom: 1px solid var(--grey-100); transition: background var(--t-fast); }
+.table tbody tr:hover { background: var(--grey-50); }
+.table td { padding: 9px 14px; color: var(--grey-800); }
+.num { text-align: center; color: var(--grey-400); font-size: 0.7rem; width: 40px; }
+.r { text-align: right; font-variant-numeric: tabular-nums; }
+.badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-full); background: var(--primary-bg); color: var(--primary); }
+.code { font-size: 0.72rem; background: var(--grey-100); padding: 2px 7px; border-radius: 4px; font-family: monospace; }
+
+.loading { display: flex; align-items: center; justify-content: center; padding: 80px; }
+.spinner { width: 22px; height: 22px; border: 2px solid var(--grey-300); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; }

@@ -1,0 +1,122 @@
+.page { display: flex; flex-direction: column; gap: 16px; animation: fadeUp 0.2s ease; }
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.title { font-size: 1.2rem; font-weight: 700; color: var(--grey-900); }
+.sub { font-size: 0.78rem; color: var(--grey-600); margin-top: 3px; }
+
+.actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.refreshBtn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius-md);
+  background: #fff; border: 1px solid var(--grey-300);
+  color: var(--grey-700); font-size: 0.8rem; font-weight: 500;
+  transition: var(--t-fast);
+}
+.refreshBtn:hover:not(:disabled) { background: var(--grey-100); }
+.refreshBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.csvBtn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius-md);
+  background: var(--primary); color: #fff;
+  font-size: 0.8rem; font-weight: 600;
+  transition: var(--t-fast);
+}
+.csvBtn:hover:not(:disabled) { background: var(--primary-light); }
+.csvBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.spin { animation: spin 0.8s linear infinite; }
+
+/* Filters */
+.filterBar {
+  background: #fff;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+.filterIcon { color: var(--grey-500); flex-shrink: 0; }
+.filterRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1; }
+.fg { display: flex; align-items: center; gap: 6px; }
+.fg label { font-size: 0.75rem; font-weight: 600; color: var(--grey-600); white-space: nowrap; }
+.input {
+  padding: 6px 10px; border: 1px solid var(--grey-300); border-radius: var(--radius-sm);
+  background: var(--grey-50); font-size: 0.8rem; outline: none; transition: var(--t-fast);
+}
+.input:focus { border-color: var(--primary); background: #fff; }
+select.input { cursor: pointer; }
+
+.applyBtn {
+  padding: 7px 16px; background: var(--primary); color: #fff;
+  border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 600;
+  transition: var(--t-fast); flex-shrink: 0; white-space: nowrap;
+}
+.applyBtn:hover { background: var(--primary-light); }
+
+/* Top content */
+.topContent {
+  background: #fff;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Table card */
+.tableCard {
+  background: #fff;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.tableInfo {
+  padding: 8px 16px;
+  background: var(--grey-50);
+  border-bottom: 1px solid var(--grey-200);
+  font-size: 0.72rem;
+  color: var(--grey-500);
+  font-weight: 500;
+}
+
+.tableWrap { overflow-x: auto; }
+.table { width: 100%; font-size: 0.82rem; }
+.table thead { background: var(--grey-50); border-bottom: 1px solid var(--grey-300); }
+
+.numTh, .th, .thR {
+  padding: 9px 12px; text-align: left;
+  font-size: 0.7rem; font-weight: 700; color: var(--grey-600);
+  text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+}
+.numTh { width: 42px; text-align: center; }
+.thR { text-align: right; }
+
+.tr { border-bottom: 1px solid var(--grey-100); transition: background var(--t-fast); }
+.tr:last-child { border-bottom: none; }
+.tr:hover { background: var(--grey-50); }
+
+.numTd, .td, .tdR { padding: 9px 12px; color: var(--grey-800); vertical-align: middle; }
+.numTd { text-align: center; font-size: 0.7rem; color: var(--grey-400); }
+.tdR { text-align: right; font-variant-numeric: tabular-nums; }
+
+.state {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 60px 20px; color: var(--grey-500); font-size: 0.85rem;
+}
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--grey-300); border-top-color: var(--primary);
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}

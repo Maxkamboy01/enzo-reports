@@ -1,0 +1,151 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  height: var(--header-height);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--grey-300);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  gap: var(--space-md);
+  z-index: 90;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.8rem;
+}
+
+.breadHome {
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.05em;
+}
+
+.breadItem {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.breadSep {
+  color: var(--grey-400);
+}
+
+.breadLink {
+  color: var(--grey-600);
+}
+
+.breadSection {
+  color: var(--grey-500);
+}
+
+.sep {
+  color: var(--grey-400);
+}
+
+.breadCurrent {
+  color: var(--grey-900);
+  font-weight: 600;
+}
+
+.avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.dbBadge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: var(--grey-500);
+  white-space: nowrap;
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .date { display: block; }
+}
+
+.iconBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--grey-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--t-fast);
+}
+
+.iconBtn:hover {
+  background: var(--grey-100);
+  color: var(--grey-900);
+}
+
+.userChip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 4px;
+  background: var(--grey-100);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--grey-800);
+  transition: var(--t-fast);
+}
+
+.userChip:hover {
+  background: var(--grey-200);
+}
+
+.userAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
