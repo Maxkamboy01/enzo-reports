@@ -14,14 +14,24 @@ function readStore(key) {
 }
 
 function extractUser(data, fallback) {
-  const d = data?.data ?? data;
-  if (!d) return null;
-  const token = d.accessToken ?? d.token ?? d.access_token;
-  if (!token) return null;
+  // Unwrap one level of { data: ... } if present
+  const d = (data?.data && typeof data.data === 'object') ? data.data : data;
+  if (!d || typeof d !== 'object') return null;
+  // Try every common token field name across different backend conventions
+  const token =
+    d.accessToken  ?? d.access_token  ?? d.AccessToken  ??
+    d.token        ?? d.Token         ?? d.authToken     ??
+    d.jwt          ?? d.JWT           ?? d.bearerToken   ??
+    d.BearerToken  ?? d.sessionToken  ?? d.SessionId     ??
+    d.jwtToken     ?? d.JwtToken      ?? d.TokenValue    ??
+    d.auth_token   ?? d.id_token;
+  if (!token || typeof token !== 'string') return null;
   return {
-    name: `${d.firstName || ''} ${d.lastName || ''}`.trim() || d.employeeCode || d.name || fallback,
-    jobTitle: d.jobTitle || d.position || '',
-    employeeCode: d.employeeCode || '',
+    name: `${d.firstName || d.FirstName || ''} ${d.lastName || d.LastName || ''}`.trim()
+          || d.fullName || d.FullName || d.name || d.Name
+          || d.employeeCode || d.username || d.userName || fallback,
+    jobTitle: d.jobTitle || d.JobTitle || d.position || d.Position || '',
+    employeeCode: d.employeeCode || d.EmployeeCode || d.username || d.userName || '',
     token,
   };
 }
@@ -29,8 +39,8 @@ function extractUser(data, fallback) {
 // Try one auth call — returns user object or null
 async function tryAuth(url, body) {
   try {
-    const res = await axios.post(url, body, { timeout: 10000 });
-    return extractUser(res.data, body.employeeCode || body.username || '');
+    const res = await axios.post(url, body, { timeout: 8000 });
+    return extractUser(res.data, body.employeeCode || body.username || body.login || '');
   } catch {
     return null;
   }
@@ -39,24 +49,28 @@ async function tryAuth(url, body) {
 // Attempt login on a single backend using all known auth schemas
 async function loginToBackend(proxyBase, credentials) {
   const { employeeCode, externalEmployeeNumber, deviceId } = credentials;
+  const dev = deviceId || 'web';
 
-  // Schema 1 — Shifer-style: POST /api/auth
-  const u1 = await tryAuth(`${proxyBase}/api/auth`, {
-    employeeCode,
-    externalEmployeeNumber,
-    deviceId: deviceId || 'web',
-  });
+  // Primary attempt — Shifer/JBI style (proven to work on Shifer)
+  const primaryBody = { employeeCode, externalEmployeeNumber, deviceId: dev };
+  const u1 = await tryAuth(`${proxyBase}/api/auth`, primaryBody);
   if (u1) return u1;
 
-  // Schema 2 — try common REST paths with same body
-  for (const path of ['/api/auth/login', '/api/employees/login', '/api/account/login']) {
-    const u = await tryAuth(`${proxyBase}${path}`, {
-      employeeCode,
-      externalEmployeeNumber,
-      deviceId: deviceId || 'web',
-      username: employeeCode,
-      password: externalEmployeeNumber,
-    });
+  // Alternative body shapes some SAP B1 wrappers use
+  const altBodies = [
+    { employeeCode, password: externalEmployeeNumber, deviceId: dev },
+    { username: employeeCode, password: externalEmployeeNumber, deviceId: dev },
+    { username: employeeCode, externalEmployeeNumber, deviceId: dev },
+  ];
+
+  for (const body of altBodies) {
+    const u = await tryAuth(`${proxyBase}/api/auth`, body);
+    if (u) return u;
+  }
+
+  // Try secondary endpoint paths with the original body
+  for (const path of ['/api/auth/login', '/api/account/login', '/api/employees/login']) {
+    const u = await tryAuth(`${proxyBase}${path}`, primaryBody);
     if (u) return u;
   }
 

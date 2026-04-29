@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth, DB_META } from './context/AuthContext';
 import { I18nProvider } from './context/I18nContext';
 import AppLayout from './components/layout/AppLayout';
 import { dashShifer } from './services/apiShifer';
@@ -53,27 +53,43 @@ const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 60000 } },
 });
 
+// Read localStorage token for a given DB key — used as fallback when React
+// state hasn't propagated yet (setDbTokens is async).
+const lsHas = db => !!localStorage.getItem(DB_META[db]?.token);
+
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  // isAuthenticated uses React state; localStorage is the synchronous fallback
+  // for the one render that fires between login() and the state update landing.
+  const ok = isAuthenticated || !!localStorage.getItem('enzo_user');
+  return ok ? children : <Navigate to="/login" replace />;
 }
 
 // Redirects "/" to the first available DB's home page
 function SmartHome() {
   const { dbTokens } = useAuth();
-  if (dbTokens.cement) return <Dashboard />;
-  if (dbTokens.shifer) return <Navigate to="/shifer/production-performance" replace />;
-  if (dbTokens.jbi)    return <Navigate to="/jbi/mill-production" replace />;
+  const hasCement = dbTokens.cement || lsHas('cement');
+  const hasShifer = dbTokens.shifer || lsHas('shifer');
+  const hasJbi    = dbTokens.jbi    || lsHas('jbi');
+  if (hasCement) return <Dashboard />;
+  if (hasShifer) return <Navigate to="/shifer/production-performance" replace />;
+  if (hasJbi)    return <Navigate to="/jbi/mill-production" replace />;
   return <Dashboard />;
 }
 
-// Guards a route that requires a specific database token
+// Guards a route that requires a specific database token.
+// Uses localStorage as a synchronous fallback so that the one-render gap
+// between login() and React state propagation can't bounce the user back.
 function DBRoute({ db, children }) {
   const { dbTokens } = useAuth();
-  if (dbTokens[db]) return children;
-  if (dbTokens.cement) return <Navigate to="/" replace />;
-  if (dbTokens.shifer) return <Navigate to="/shifer/production-performance" replace />;
-  if (dbTokens.jbi)    return <Navigate to="/jbi/mill-production" replace />;
+  const hasCement = dbTokens.cement || lsHas('cement');
+  const hasShifer = dbTokens.shifer || lsHas('shifer');
+  const hasJbi    = dbTokens.jbi    || lsHas('jbi');
+
+  if (dbTokens[db] || lsHas(db)) return children;
+  if (hasCement) return <Navigate to="/" replace />;
+  if (hasShifer) return <Navigate to="/shifer/production-performance" replace />;
+  if (hasJbi)    return <Navigate to="/jbi/mill-production" replace />;
   return <Navigate to="/login" replace />;
 }
 
