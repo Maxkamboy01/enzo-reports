@@ -26,6 +26,7 @@ const LANGS = {
     'ui.refresh':'Янгилаш','ui.export_csv':'CSV','ui.search':'Қидириш',
     'ui.from':'Дан','ui.to':'Гача','ui.loading':'Юкланяпти...',
     'ui.no_data':'Маълумот топилмади','ui.records':'та ёзув','ui.logout':'Чиқиш','ui.back':'Орқага',
+    'ui.page':'Бет','ui.prev':'Олдинги','ui.next':'Кейингиси',
 
     'settings.title':'Созламалар','settings.sub':'Сайт созламалари',
     'settings.language':'Тил','settings.lang_desc':'Интерфейс тилини танланг',
@@ -67,6 +68,7 @@ const LANGS = {
     'ui.refresh':'Обновить','ui.export_csv':'CSV','ui.search':'Поиск',
     'ui.from':'От','ui.to':'До','ui.loading':'Загрузка...',
     'ui.no_data':'Данные не найдены','ui.records':'записей','ui.logout':'Выход','ui.back':'Назад',
+    'ui.page':'Стр.','ui.prev':'Назад','ui.next':'Вперёд',
 
     'settings.title':'Настройки','settings.sub':'Параметры сайта',
     'settings.language':'Язык','settings.lang_desc':'Выберите язык интерфейса',
@@ -108,6 +110,7 @@ const LANGS = {
     'ui.refresh':'Refresh','ui.export_csv':'CSV','ui.search':'Search',
     'ui.from':'From','ui.to':'To','ui.loading':'Loading...',
     'ui.no_data':'No data found','ui.records':'records','ui.logout':'Logout','ui.back':'Back',
+    'ui.page':'Page','ui.prev':'Previous','ui.next':'Next',
 
     'settings.title':'Settings','settings.sub':'Website preferences',
     'settings.language':'Language','settings.lang_desc':'Choose interface language',

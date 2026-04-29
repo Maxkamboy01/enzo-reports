@@ -82,14 +82,6 @@ select.input { cursor: pointer; }
   box-shadow: var(--shadow-sm);
 }
 
-.tableInfo {
-  padding: 8px 16px;
-  background: var(--grey-50);
-  border-bottom: 1px solid var(--grey-200);
-  font-size: 0.72rem;
-  color: var(--grey-500);
-  font-weight: 500;
-}
 
 .tableWrap { overflow-x: auto; }
 .table { width: 100%; font-size: 0.82rem; }
@@ -119,6 +111,68 @@ select.input { cursor: pointer; }
   width: 20px; height: 20px;
   border: 2px solid var(--grey-300); border-top-color: var(--primary);
   border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+
+/* Table info bar */
+.tableInfo {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--grey-50);
+  border-bottom: 1px solid var(--grey-200);
+  font-size: 0.72rem;
+  color: var(--grey-500);
+  font-weight: 500;
+}
+.pageInfo { color: var(--grey-600); font-weight: 600; }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--grey-200);
+  background: var(--grey-50);
+  gap: 8px;
+}
+
+.pageBtn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  background: #fff;
+  border: 1px solid var(--grey-300);
+  color: var(--grey-700);
+  font-size: 0.8rem; font-weight: 500;
+  transition: var(--t-fast);
+  white-space: nowrap;
+}
+.pageBtn:hover:not(:disabled) { background: var(--grey-100); border-color: var(--grey-400); color: var(--grey-900); }
+.pageBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pageNumbers {
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: center;
+}
+
+.pageNum {
+  min-width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--grey-200);
+  background: #fff;
+  color: var(--grey-700);
+  font-size: 0.8rem; font-weight: 500;
+  transition: var(--t-fast);
+}
+.pageNum:hover { background: var(--grey-100); border-color: var(--grey-300); }
+.pageNumActive {
+  background: var(--primary); color: #fff;
+  border-color: var(--primary); font-weight: 700;
+}
+.pageNumActive:hover { background: var(--primary-light); }
+
+.pageDots {
+  min-width: 24px; text-align: center;
+  color: var(--grey-400); font-size: 0.8rem;
 }
 
 /* Mobile responsive */

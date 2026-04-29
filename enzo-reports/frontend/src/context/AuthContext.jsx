@@ -106,6 +106,15 @@ export function AuthProvider({ children }) {
       throw new Error('Барча базаларда логин муваффақиятсиз. Маълумотларни текширинг.');
     }
 
+    // Clear ALL previous tokens before writing new ones — prevents stale
+    // session tokens from a different DB bleeding into this login
+    Object.values(DB_META).forEach(m => {
+      localStorage.removeItem(m.token);
+      localStorage.removeItem(m.user);
+    });
+    localStorage.removeItem('enzo_token');
+    localStorage.removeItem('enzo_user');
+
     let primaryUser = null;
 
     succeeded.forEach(({ db, userObj }) => {
@@ -115,15 +124,23 @@ export function AuthProvider({ children }) {
       if (db === 'cement' || !primaryUser) primaryUser = userObj;
     });
 
-    // Legacy key — keeps api.js interceptor working
-    localStorage.setItem('enzo_token', primaryUser.token);
+    // Legacy enzo_token is ONLY written when cement succeeded (it drives api.js
+    // interceptor for cement requests). For JBI/Shifer-only logins this key stays
+    // empty so dbTokens.cement stays false on the next refresh.
+    const cementUser = succeeded.find(s => s.db === 'cement')?.userObj;
+    if (cementUser) {
+      localStorage.setItem('enzo_token', cementUser.token);
+    }
+    // enzo_user provides isAuthenticated on refresh regardless of which DB
     localStorage.setItem('enzo_user', JSON.stringify(primaryUser));
     setUser(primaryUser);
 
-    setDbTokens(prev => {
-      const next = { ...prev };
-      succeeded.forEach(({ db }) => { next[db] = true; });
-      return next;
+    // Hard-reset ALL db flags, then only raise the ones that succeeded
+    setDbTokens({
+      cement: false,
+      shifer: false,
+      jbi:    false,
+      ...Object.fromEntries(succeeded.map(s => [s.db, true])),
     });
 
     return { user: primaryUser, databases: succeeded.map(s => s.db) };
