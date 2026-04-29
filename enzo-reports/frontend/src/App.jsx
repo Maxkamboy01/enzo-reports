@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { I18nProvider } from './context/I18nContext';
 import AppLayout from './components/layout/AppLayout';
 import { dashShifer } from './services/apiShifer';
 import { dashJbi } from './services/apiJbi';
@@ -78,6 +79,7 @@ function DBRoute({ db, children }) {
 export default function App() {
   return (
     <QueryClientProvider client={qc}>
+      <I18nProvider>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -175,6 +177,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      </I18nProvider>
     </QueryClientProvider>
   );
 }

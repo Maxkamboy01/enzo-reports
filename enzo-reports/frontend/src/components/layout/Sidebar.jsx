@@ -1,263 +1,148 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useI18n } from '../../context/I18nContext';
 import {
   LayoutDashboard, Package, TrendingDown, TrendingUp, ArrowLeftRight,
   Database, Cog, GitCompare, Table2, LogOut, ChevronDown,
   Activity, Layers, AlertTriangle, DollarSign, FlaskConical,
   BarChart2, ArrowRightLeft, BookOpen, Zap, Scale, HardHat, FileBarChart,
+  PanelLeftClose, PanelLeftOpen, Settings, Globe, X,
 } from 'lucide-react';
 import TokenManager from '../ui/TokenManager';
 import styles from './Sidebar.module.css';
 
-// db: which database this section belongs to (null = always visible)
 const SECTIONS = [
   {
-    id: 'overview',
-    label: null,
-    db: null,
+    id: 'overview', label: null, db: null,
+    items: [{ path: '/', label: 'item.dashboard', icon: LayoutDashboard, end: true }],
+  },
+
+  // ── CEMENT ───────────────────────────────────────
+  { id: 'production', label: 'nav.production', color: '#1B3A8C', db: 'cement',
     items: [
-      { path: '/', label: 'Асосий панель', icon: LayoutDashboard, end: true },
+      { path: '/mill-production',   label: 'item.mill_production',   icon: GitCompare },
+      { path: '/volume-daily',      label: 'item.volume_daily',       icon: BarChart2 },
+      { path: '/shift-performance', label: 'item.shift_performance',  icon: Zap },
+    ],
+  },
+  { id: 'rawmat', label: 'nav.rawmat', color: '#D97706', db: 'cement',
+    items: [
+      { path: '/raw-materials-stock',        label: 'item.raw_materials_stock',        icon: Package },
+      { path: '/raw-material-receipt',       label: 'item.raw_material_receipt',       icon: TrendingUp },
+      { path: '/raw-material-consumption',   label: 'item.raw_material_consumption',   icon: TrendingDown },
+      { path: '/raw-material-movement',      label: 'item.raw_material_movement',      icon: ArrowLeftRight },
+      { path: '/raw-material-pivot',         label: 'item.raw_material_pivot',         icon: Table2 },
+      { path: '/material-vs-bom',            label: 'item.material_vs_bom',            icon: Scale },
+      { path: '/material-overconsumption',   label: 'item.material_overconsumption',   icon: AlertTriangle },
+      { path: '/material-consumption-shift', label: 'item.material_consumption_shift', icon: Layers },
+    ],
+  },
+  { id: 'silo', label: 'nav.silo', color: '#059669', db: 'cement',
+    items: [
+      { path: '/silo-stock',                  label: 'item.silo_stock',        icon: Database },
+      { path: '/cement-consumption',          label: 'item.cement_consumption', icon: Cog },
+      { path: '/cement-additive-composition', label: 'item.cement_additive',   icon: FlaskConical },
+    ],
+  },
+  { id: 'clinker', label: 'nav.clinker', color: '#7C3AED', db: 'cement',
+    items: [
+      { path: '/clinker-factor',       label: 'item.clinker_factor', icon: Activity },
+      { path: '/clinker-factor-trend', label: 'item.clinker_trend',  icon: TrendingDown },
+    ],
+  },
+  { id: 'quality', label: 'nav.quality', color: '#DC2626', db: 'cement',
+    items: [
+      { path: '/defect-details', label: 'item.defect_details', icon: AlertTriangle },
+    ],
+  },
+  { id: 'cost', label: 'nav.cost', color: '#0891B2', db: 'cement',
+    items: [
+      { path: '/cost-structure',     label: 'item.cost_structure',    icon: BookOpen },
+      { path: '/cost-summary',       label: 'item.cost_summary',      icon: DollarSign },
+      { path: '/cost-trend-monthly', label: 'item.cost_trend_monthly', icon: TrendingUp },
+    ],
+  },
+  { id: 'inventory', label: 'nav.inventory', color: '#64748B', db: 'cement',
+    items: [
+      { path: '/inventory-transfer', label: 'item.inventory_transfer', icon: ArrowRightLeft },
     ],
   },
 
-  // ── CEMENT sections ──────────────────────────────
-  {
-    id: 'production',
-    label: 'Ишлаб чиқариш',
-    color: '#1B3A8C',
-    db: 'cement',
+  // ── SHIFER ───────────────────────────────────────
+  { id: 'shifer-overview', label: 'nav.shifer_overview', color: '#059669', db: 'shifer',
     items: [
-      { path: '/mill-production',   label: 'Тегирмон ишлаб чиқариши', icon: GitCompare },
-      { path: '/volume-daily',      label: 'Кунлик ҳажм',              icon: BarChart2 },
-      { path: '/shift-performance', label: 'Смена кўрсаткичлари',       icon: Zap },
+      { path: '/shifer/production-performance', label: 'item.production_performance', icon: HardHat },
+      { path: '/shifer/issue-materials',        label: 'item.issue_materials',        icon: FileBarChart },
     ],
   },
-  {
-    id: 'rawmat',
-    label: 'Хом ашё',
-    color: '#D97706',
-    db: 'cement',
+  { id: 'shifer-production', label: 'nav.shifer_production', color: '#059669', db: 'shifer',
     items: [
-      { path: '/raw-materials-stock',        label: 'Қолдиқлар',         icon: Package },
-      { path: '/raw-material-receipt',       label: 'Кириш',              icon: TrendingUp },
-      { path: '/raw-material-consumption',   label: 'Сарф',               icon: TrendingDown },
-      { path: '/raw-material-movement',      label: 'Ҳаракат',            icon: ArrowLeftRight },
-      { path: '/raw-material-pivot',         label: 'Пивот жадвал',       icon: Table2 },
-      { path: '/material-vs-bom',            label: 'vs BOM',             icon: Scale },
-      { path: '/material-overconsumption',   label: 'Ортиқча сарф',       icon: AlertTriangle },
-      { path: '/material-consumption-shift', label: 'Смена бўйича сарф',  icon: Layers },
+      { path: '/shifer/mill-production',   label: 'item.mill_production',  icon: GitCompare },
+      { path: '/shifer/volume-daily',      label: 'item.volume_daily',      icon: BarChart2 },
+      { path: '/shifer/shift-performance', label: 'item.shift_performance', icon: Zap },
     ],
   },
-  {
-    id: 'silo',
-    label: 'Силос & Цемент',
-    color: '#059669',
-    db: 'cement',
+  { id: 'shifer-rawmat', label: 'nav.shifer_rawmat', color: '#D97706', db: 'shifer',
     items: [
-      { path: '/silo-stock',                  label: 'Силос қолдиқлари',   icon: Database },
-      { path: '/cement-consumption',          label: 'Цемент сарфи',       icon: Cog },
-      { path: '/cement-additive-composition', label: 'Қўшимчалар таркиби', icon: FlaskConical },
-    ],
-  },
-  {
-    id: 'clinker',
-    label: 'Клинкер',
-    color: '#7C3AED',
-    db: 'cement',
-    items: [
-      { path: '/clinker-factor',       label: 'Клинкер омил', icon: Activity },
-      { path: '/clinker-factor-trend', label: 'Омил тренди',  icon: TrendingDown },
-    ],
-  },
-  {
-    id: 'quality',
-    label: 'Сифат назорати',
-    color: '#DC2626',
-    db: 'cement',
-    items: [
-      { path: '/defect-details', label: 'Нуқсон тафсилоти', icon: AlertTriangle },
-    ],
-  },
-  {
-    id: 'cost',
-    label: 'Харажатлар',
-    color: '#0891B2',
-    db: 'cement',
-    items: [
-      { path: '/cost-structure',     label: 'Харажат структураси', icon: BookOpen },
-      { path: '/cost-summary',       label: 'Харажат хулосаси',    icon: DollarSign },
-      { path: '/cost-trend-monthly', label: 'Ойлик тренд',         icon: TrendingUp },
-    ],
-  },
-  {
-    id: 'inventory',
-    label: 'Омбор',
-    color: '#64748B',
-    db: 'cement',
-    items: [
-      { path: '/inventory-transfer', label: 'Ўтказма сўровлари', icon: ArrowRightLeft },
+      { path: '/shifer/raw-materials-stock',        label: 'item.raw_materials_stock',        icon: Package },
+      { path: '/shifer/raw-material-receipt',       label: 'item.raw_material_receipt',       icon: TrendingUp },
+      { path: '/shifer/raw-material-consumption',   label: 'item.raw_material_consumption',   icon: TrendingDown },
+      { path: '/shifer/raw-material-movement',      label: 'item.raw_material_movement',      icon: ArrowLeftRight },
+      { path: '/shifer/raw-material-pivot',         label: 'item.raw_material_pivot',         icon: Table2 },
+      { path: '/shifer/material-vs-bom',            label: 'item.material_vs_bom',            icon: Scale },
+      { path: '/shifer/material-overconsumption',   label: 'item.material_overconsumption',   icon: AlertTriangle },
+      { path: '/shifer/material-consumption-shift', label: 'item.material_consumption_shift', icon: Layers },
     ],
   },
 
-  // ── SHIFER sections ──────────────────────────────
-  {
-    id: 'shifer-overview',
-    label: 'Шифер · Умумий',
-    color: '#059669',
-    db: 'shifer',
+  // ── JBI ──────────────────────────────────────────
+  { id: 'jbi-production', label: 'nav.jbi_production', color: '#7C3AED', db: 'jbi',
     items: [
-      { path: '/shifer/production-performance', label: 'Ишлаб чиқариш ҳисоботи', icon: HardHat },
-      { path: '/shifer/issue-materials',        label: 'Материал чиқими',         icon: FileBarChart },
+      { path: '/jbi/mill-production', label: 'item.mill_production', icon: GitCompare },
+      { path: '/jbi/volume-daily',    label: 'item.volume_daily',    icon: BarChart2 },
     ],
   },
-  {
-    id: 'shifer-production',
-    label: 'Шифер · Ишлаб чиқариш',
-    color: '#059669',
-    db: 'shifer',
+  { id: 'jbi-rawmat', label: 'nav.jbi_rawmat', color: '#D97706', db: 'jbi',
     items: [
-      { path: '/shifer/mill-production',   label: 'Тегирмон ишлаб чиқариши', icon: GitCompare },
-      { path: '/shifer/volume-daily',      label: 'Кунлик ҳажм',              icon: BarChart2 },
-      { path: '/shifer/shift-performance', label: 'Смена кўрсаткичлари',       icon: Zap },
+      { path: '/jbi/raw-materials-stock',        label: 'item.raw_materials_stock',        icon: Package },
+      { path: '/jbi/raw-material-receipt',       label: 'item.raw_material_receipt',       icon: TrendingUp },
+      { path: '/jbi/raw-material-consumption',   label: 'item.raw_material_consumption',   icon: TrendingDown },
+      { path: '/jbi/raw-material-movement',      label: 'item.raw_material_movement',      icon: ArrowLeftRight },
+      { path: '/jbi/raw-material-pivot',         label: 'item.raw_material_pivot',         icon: Table2 },
+      { path: '/jbi/material-vs-bom',            label: 'item.material_vs_bom',            icon: Scale },
+      { path: '/jbi/material-overconsumption',   label: 'item.material_overconsumption',   icon: AlertTriangle },
+      { path: '/jbi/material-consumption-shift', label: 'item.material_consumption_shift', icon: Layers },
     ],
   },
-  {
-    id: 'shifer-rawmat',
-    label: 'Шифер · Хом ашё',
-    color: '#D97706',
-    db: 'shifer',
+  { id: 'jbi-silo', label: 'nav.jbi_silo', color: '#0891B2', db: 'jbi',
     items: [
-      { path: '/shifer/raw-materials-stock',        label: 'Қолдиқлар',         icon: Package },
-      { path: '/shifer/raw-material-receipt',       label: 'Кириш',              icon: TrendingUp },
-      { path: '/shifer/raw-material-consumption',   label: 'Сарф',               icon: TrendingDown },
-      { path: '/shifer/raw-material-movement',      label: 'Ҳаракат',            icon: ArrowLeftRight },
-      { path: '/shifer/raw-material-pivot',         label: 'Пивот жадвал',       icon: Table2 },
-      { path: '/shifer/material-vs-bom',            label: 'vs BOM',             icon: Scale },
-      { path: '/shifer/material-overconsumption',   label: 'Ортиқча сарф',       icon: AlertTriangle },
-      { path: '/shifer/material-consumption-shift', label: 'Смена бўйича сарф',  icon: Layers },
+      { path: '/jbi/silo-stock',                  label: 'item.silo_stock',        icon: Database },
+      { path: '/jbi/cement-consumption',          label: 'item.cement_consumption', icon: Cog },
+      { path: '/jbi/cement-additive-composition', label: 'item.cement_additive',   icon: FlaskConical },
     ],
   },
-  {
-    id: 'shifer-silo',
-    label: 'Шифер · Силос & Цемент',
-    color: '#0891B2',
-    db: 'shifer',
+  { id: 'jbi-quality', label: 'nav.jbi_quality', color: '#DC2626', db: 'jbi',
     items: [
-      { path: '/shifer/silo-stock',                  label: 'Силос қолдиқлари',   icon: Database },
-      { path: '/shifer/cement-consumption',          label: 'Цемент сарфи',       icon: Cog },
-      { path: '/shifer/cement-additive-composition', label: 'Қўшимчалар таркиби', icon: FlaskConical },
+      { path: '/jbi/defect-details', label: 'item.defect_details', icon: AlertTriangle },
     ],
   },
-  {
-    id: 'shifer-clinker',
-    label: 'Шифер · Клинкер',
-    color: '#7C3AED',
-    db: 'shifer',
+  { id: 'jbi-cost', label: 'nav.jbi_cost', color: '#7C3AED', db: 'jbi',
     items: [
-      { path: '/shifer/clinker-factor',       label: 'Клинкер омил', icon: Activity },
-      { path: '/shifer/clinker-factor-trend', label: 'Омил тренди',  icon: TrendingDown },
+      { path: '/jbi/cost-structure',     label: 'item.cost_structure',    icon: BookOpen },
+      { path: '/jbi/cost-summary',       label: 'item.cost_summary',      icon: DollarSign },
+      { path: '/jbi/cost-trend-monthly', label: 'item.cost_trend_monthly', icon: TrendingUp },
     ],
   },
-  {
-    id: 'shifer-quality',
-    label: 'Шифер · Сифат',
-    color: '#DC2626',
-    db: 'shifer',
+  { id: 'jbi-inventory', label: 'nav.jbi_inventory', color: '#64748B', db: 'jbi',
     items: [
-      { path: '/shifer/defect-details', label: 'Нуқсон тафсилоти', icon: AlertTriangle },
-    ],
-  },
-  {
-    id: 'shifer-cost',
-    label: 'Шифер · Харажатлар',
-    color: '#1B3A8C',
-    db: 'shifer',
-    items: [
-      { path: '/shifer/cost-structure',     label: 'Харажат структураси', icon: BookOpen },
-      { path: '/shifer/cost-summary',       label: 'Харажат хулосаси',    icon: DollarSign },
-      { path: '/shifer/cost-trend-monthly', label: 'Ойлик тренд',         icon: TrendingUp },
-    ],
-  },
-  {
-    id: 'shifer-inventory',
-    label: 'Шифер · Омбор',
-    color: '#64748B',
-    db: 'shifer',
-    items: [
-      { path: '/shifer/inventory-transfer', label: 'Ўтказма сўровлари', icon: ArrowRightLeft },
-    ],
-  },
-  // ── JBI sections ─────────────────────────────────
-  {
-    id: 'jbi-production',
-    label: 'ЖБИ · Ишлаб чиқариш',
-    color: '#7C3AED',
-    db: 'jbi',
-    items: [
-      { path: '/jbi/mill-production', label: 'Тегирмон ишлаб чиқариши', icon: GitCompare },
-      { path: '/jbi/volume-daily',    label: 'Кунлик ҳажм',              icon: BarChart2 },
-    ],
-  },
-  {
-    id: 'jbi-rawmat',
-    label: 'ЖБИ · Хом ашё',
-    color: '#D97706',
-    db: 'jbi',
-    items: [
-      { path: '/jbi/raw-materials-stock',        label: 'Қолдиқлар',         icon: Package },
-      { path: '/jbi/raw-material-receipt',       label: 'Кириш',              icon: TrendingUp },
-      { path: '/jbi/raw-material-consumption',   label: 'Сарф',               icon: TrendingDown },
-      { path: '/jbi/raw-material-movement',      label: 'Ҳаракат',            icon: ArrowLeftRight },
-      { path: '/jbi/raw-material-pivot',         label: 'Пивот жадвал',       icon: Table2 },
-      { path: '/jbi/material-vs-bom',            label: 'vs BOM',             icon: Scale },
-      { path: '/jbi/material-overconsumption',   label: 'Ортиқча сарф',       icon: AlertTriangle },
-      { path: '/jbi/material-consumption-shift', label: 'Смена бўйича сарф',  icon: Layers },
-    ],
-  },
-  {
-    id: 'jbi-silo',
-    label: 'ЖБИ · Силос & Цемент',
-    color: '#0891B2',
-    db: 'jbi',
-    items: [
-      { path: '/jbi/silo-stock',                  label: 'Силос қолдиқлари',   icon: Database },
-      { path: '/jbi/cement-consumption',          label: 'Цемент сарфи',       icon: Cog },
-      { path: '/jbi/cement-additive-composition', label: 'Қўшимчалар таркиби', icon: FlaskConical },
-    ],
-  },
-  {
-    id: 'jbi-quality',
-    label: 'ЖБИ · Сифат',
-    color: '#DC2626',
-    db: 'jbi',
-    items: [
-      { path: '/jbi/defect-details', label: 'Нуқсон тафсилоти', icon: AlertTriangle },
-    ],
-  },
-  {
-    id: 'jbi-cost',
-    label: 'ЖБИ · Харажатлар',
-    color: '#7C3AED',
-    db: 'jbi',
-    items: [
-      { path: '/jbi/cost-structure',     label: 'Харажат структураси', icon: BookOpen },
-      { path: '/jbi/cost-summary',       label: 'Харажат хулосаси',    icon: DollarSign },
-      { path: '/jbi/cost-trend-monthly', label: 'Ойлик тренд',         icon: TrendingUp },
-    ],
-  },
-  {
-    id: 'jbi-inventory',
-    label: 'ЖБИ · Омбор',
-    color: '#64748B',
-    db: 'jbi',
-    items: [
-      { path: '/jbi/inventory-transfer', label: 'Ўтказма сўровлари', icon: ArrowRightLeft },
+      { path: '/jbi/inventory-transfer', label: 'item.inventory_transfer', icon: ArrowRightLeft },
     ],
   },
 ];
 
-function SidebarSection({ section }) {
+function SidebarSection({ section, collapsed }) {
+  const { t } = useI18n();
   const location = useLocation();
   const hasActive = section.items.some(i =>
     i.end ? location.pathname === i.path
@@ -276,9 +161,31 @@ function SidebarSection({ section }) {
               to={item.path}
               end={item.end}
               className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ''}`}
+              title={collapsed ? t(item.label) : undefined}
             >
               <Icon size={15} />
-              <span>{item.label}</span>
+              {!collapsed && <span>{t(item.label)}</span>}
+            </NavLink>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (collapsed) {
+    return (
+      <div className={styles.collapsedSection}>
+        {section.items.map(item => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => `${styles.collapsedItem} ${isActive ? styles.collapsedActive : ''}`}
+              style={({ isActive }) => isActive ? { '--s-color': section.color } : {}}
+              title={t(item.label)}
+            >
+              <Icon size={15} />
             </NavLink>
           );
         })}
@@ -294,7 +201,7 @@ function SidebarSection({ section }) {
         style={hasActive ? { '--s-color': section.color } : {}}
       >
         <span className={styles.sectionDot} style={{ background: section.color }} />
-        <span className={styles.sectionLabel}>{section.label}</span>
+        <span className={styles.sectionLabel}>{t(section.label)}</span>
         <ChevronDown size={12} className={`${styles.sectionChev} ${open ? styles.chevOpen : ''}`} />
       </button>
 
@@ -310,7 +217,7 @@ function SidebarSection({ section }) {
                 style={({ isActive }) => isActive ? { '--s-color': section.color } : {}}
               >
                 <Icon size={13} className={styles.subIcon} />
-                <span>{item.label}</span>
+                <span>{t(item.label)}</span>
               </NavLink>
             );
           })}
@@ -320,45 +227,116 @@ function SidebarSection({ section }) {
   );
 }
 
-export default function Sidebar() {
-  const { user, logout, dbTokens } = useAuth();
+function SettingsPanel({ onClose }) {
+  const { lang, changeLang, t } = useI18n();
+  const LANGS = [
+    { code: 'uz', label: "O'zbekcha", flag: '🇺🇿' },
+    { code: 'ru', label: 'Русский',   flag: '🇷🇺' },
+    { code: 'en', label: 'English',   flag: '🇬🇧' },
+  ];
+  return (
+    <div className={styles.settingsPanel}>
+      <div className={styles.settingsHeader}>
+        <Globe size={14} />
+        <span>{t('settings.language')}</span>
+        <button className={styles.settingsClose} onClick={onClose}><X size={13} /></button>
+      </div>
+      <div className={styles.langList}>
+        {LANGS.map(l => (
+          <button
+            key={l.code}
+            className={`${styles.langBtn} ${lang === l.code ? styles.langActive : ''}`}
+            onClick={() => { changeLang(l.code); onClose(); }}
+          >
+            <span>{l.flag}</span>
+            <span>{l.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-  // Only show sections the user has access to
+export default function Sidebar({ collapsed, onToggle }) {
+  const { user, logout, dbTokens } = useAuth();
+  const { t } = useI18n();
+  const [showSettings, setShowSettings] = useState(false);
+
   const visibleSections = SECTIONS.filter(s => !s.db || dbTokens[s.db]);
 
+  const logoSub = dbTokens.cement && dbTokens.shifer && dbTokens.jbi ? 'Sement · Shifer · JBI'
+    : dbTokens.cement && dbTokens.shifer ? 'Sement · Shifer'
+    : dbTokens.cement && dbTokens.jbi    ? 'Sement · JBI'
+    : dbTokens.shifer && dbTokens.jbi    ? 'Shifer · JBI'
+    : dbTokens.shifer ? 'Shifer · Grey Mix'
+    : dbTokens.jbi    ? 'JBI · Temir Beton'
+    : 'Sement · Grey Mix';
+
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
+      {/* Logo + toggle */}
       <div className={styles.logoArea}>
         <div className={styles.logoMark}>E</div>
-        <div>
-          <div className={styles.logoTitle}>ENZO</div>
-          <div className={styles.logoSub}>
-            {dbTokens.cement && dbTokens.shifer ? 'Sement · Shifer'
-             : dbTokens.shifer ? 'Shifer · Grey Mix'
-             : 'Sement · Grey Mix'}
+        {!collapsed && (
+          <div className={styles.logoText}>
+            <div className={styles.logoTitle}>ENZO</div>
+            <div className={styles.logoSub}>{logoSub}</div>
           </div>
-        </div>
+        )}
+        <button
+          className={styles.collapseBtn}
+          onClick={onToggle}
+          title={collapsed ? 'Expand' : 'Collapse'}
+        >
+          {collapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
+        </button>
       </div>
 
+      {/* Nav */}
       <nav className={styles.nav}>
-        {visibleSections.map(s => <SidebarSection key={s.id} section={s} />)}
+        {visibleSections.map(s => (
+          <SidebarSection key={s.id} section={s} collapsed={collapsed} />
+        ))}
       </nav>
 
-      <div className={styles.tokenArea}>
-        <TokenManager />
-      </div>
-
-      <div className={styles.footer}>
-        <div className={styles.userInfo}>
-          <div className={styles.avatar}>{(user?.name || 'A')[0].toUpperCase()}</div>
-          <div>
-            <div className={styles.userName}>{user?.name || 'Admin'}</div>
-            <div className={styles.userRole}>{user?.jobTitle || 'Administrator'}</div>
-          </div>
+      {/* DB status (hidden when collapsed) */}
+      {!collapsed && (
+        <div className={styles.tokenArea}>
+          <TokenManager />
         </div>
-        <button className={styles.logoutBtn} onClick={logout} title="Чиқиш">
-          <LogOut size={15} />
-        </button>
+      )}
+
+      {/* Footer */}
+      <div className={styles.footer}>
+        <div className={styles.userInfo} title={collapsed ? (user?.name || 'Admin') : undefined}>
+          <div className={styles.avatar}>{(user?.name || 'A')[0].toUpperCase()}</div>
+          {!collapsed && (
+            <div className={styles.userText}>
+              <div className={styles.userName}>{user?.name || 'Admin'}</div>
+              <div className={styles.userRole}>{user?.jobTitle || 'Administrator'}</div>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.footerActions}>
+          <div className={styles.settingsWrap}>
+            <button
+              className={styles.iconBtn}
+              onClick={() => setShowSettings(s => !s)}
+              title={t('settings.title')}
+            >
+              <Settings size={14} />
+            </button>
+            {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+          </div>
+          <button
+            className={`${styles.iconBtn} ${styles.logoutBtn}`}
+            onClick={logout}
+            title={t('ui.logout')}
+          >
+            <LogOut size={14} />
+          </button>
+        </div>
       </div>
     </aside>
   );

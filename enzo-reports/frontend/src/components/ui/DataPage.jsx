@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, Download, Filter } from 'lucide-react';
 import { fmtFull } from '../../services/api';
+import { useI18n } from '../../context/I18nContext';
 import styles from './DataPage.module.css';
 
 export default function DataPage({
   queryKey, fetcher, title, subtitle,
   columns, renderFilters,
-  topContent,        // optional chart/stats above table
+  topContent,
   defaultParams = {},
 }) {
+  const { t } = useI18n();
   const today = new Date().toISOString().slice(0, 10);
   const firstOfMonth = today.slice(0, 7) + '-01';
   const [params, setParams] = useState({ dateFrom: firstOfMonth, dateTo: today, ...defaultParams });
@@ -44,11 +46,11 @@ export default function DataPage({
         <div className={styles.actions}>
           <button className={styles.refreshBtn} onClick={() => refetch()} disabled={isFetching}>
             <RefreshCw size={14} className={isFetching ? styles.spin : ''} />
-            Янгилаш
+            {t('ui.refresh')}
           </button>
           <button className={styles.csvBtn} onClick={exportCsv} disabled={!rows.length}>
             <Download size={14} />
-            CSV
+            {t('ui.export_csv')}
           </button>
         </div>
       </div>
@@ -59,19 +61,19 @@ export default function DataPage({
           <Filter size={14} className={styles.filterIcon} />
           <div className={styles.filterRow}>
             <div className={styles.fg}>
-              <label>Дан</label>
+              <label>{t('ui.from')}</label>
               <input type="date" value={params.dateFrom} className={styles.input}
                 onChange={e => setParams(p => ({ ...p, dateFrom: e.target.value }))} />
             </div>
             <div className={styles.fg}>
-              <label>Гача</label>
+              <label>{t('ui.to')}</label>
               <input type="date" value={params.dateTo} className={styles.input}
                 onChange={e => setParams(p => ({ ...p, dateTo: e.target.value }))} />
             </div>
             {renderFilters && renderFilters(params, setParams)}
           </div>
           <button className={styles.applyBtn} onClick={() => setApplied({ ...params })}>
-            Қидириш
+            {t('ui.search')}
           </button>
         </div>
       )}
@@ -82,12 +84,12 @@ export default function DataPage({
       {/* Table */}
       <div className={styles.tableCard}>
         <div className={styles.tableInfo}>
-          <span>{rows.length} та ёзув</span>
+          <span>{rows.length} {t('ui.records')}</span>
         </div>
         {isLoading ? (
-          <div className={styles.state}><div className={styles.spinner} /><span>Юкланяпти...</span></div>
+          <div className={styles.state}><div className={styles.spinner} /><span>{t('ui.loading')}</span></div>
         ) : rows.length === 0 ? (
-          <div className={styles.state}><span>Маълумот топилмади</span></div>
+          <div className={styles.state}><span>{t('ui.no_data')}</span></div>
         ) : (
           <div className={styles.tableWrap}>
             <table className={styles.table}>
