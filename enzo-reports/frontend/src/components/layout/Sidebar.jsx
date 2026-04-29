@@ -102,13 +102,90 @@ const SECTIONS = [
 
   // ── SHIFER sections ──────────────────────────────
   {
-    id: 'shifer',
-    label: 'Шифер · Grey Mix',
+    id: 'shifer-overview',
+    label: 'Шифер · Умумий',
     color: '#059669',
     db: 'shifer',
     items: [
       { path: '/shifer/production-performance', label: 'Ишлаб чиқариш ҳисоботи', icon: HardHat },
       { path: '/shifer/issue-materials',        label: 'Материал чиқими',         icon: FileBarChart },
+    ],
+  },
+  {
+    id: 'shifer-production',
+    label: 'Шифер · Ишлаб чиқариш',
+    color: '#059669',
+    db: 'shifer',
+    items: [
+      { path: '/shifer/mill-production',   label: 'Тегирмон ишлаб чиқариши', icon: GitCompare },
+      { path: '/shifer/volume-daily',      label: 'Кунлик ҳажм',              icon: BarChart2 },
+      { path: '/shifer/shift-performance', label: 'Смена кўрсаткичлари',       icon: Zap },
+    ],
+  },
+  {
+    id: 'shifer-rawmat',
+    label: 'Шифер · Хом ашё',
+    color: '#D97706',
+    db: 'shifer',
+    items: [
+      { path: '/shifer/raw-materials-stock',        label: 'Қолдиқлар',         icon: Package },
+      { path: '/shifer/raw-material-receipt',       label: 'Кириш',              icon: TrendingUp },
+      { path: '/shifer/raw-material-consumption',   label: 'Сарф',               icon: TrendingDown },
+      { path: '/shifer/raw-material-movement',      label: 'Ҳаракат',            icon: ArrowLeftRight },
+      { path: '/shifer/raw-material-pivot',         label: 'Пивот жадвал',       icon: Table2 },
+      { path: '/shifer/material-vs-bom',            label: 'vs BOM',             icon: Scale },
+      { path: '/shifer/material-overconsumption',   label: 'Ортиқча сарф',       icon: AlertTriangle },
+      { path: '/shifer/material-consumption-shift', label: 'Смена бўйича сарф',  icon: Layers },
+    ],
+  },
+  {
+    id: 'shifer-silo',
+    label: 'Шифер · Силос & Цемент',
+    color: '#0891B2',
+    db: 'shifer',
+    items: [
+      { path: '/shifer/silo-stock',                  label: 'Силос қолдиқлари',   icon: Database },
+      { path: '/shifer/cement-consumption',          label: 'Цемент сарфи',       icon: Cog },
+      { path: '/shifer/cement-additive-composition', label: 'Қўшимчалар таркиби', icon: FlaskConical },
+    ],
+  },
+  {
+    id: 'shifer-clinker',
+    label: 'Шифер · Клинкер',
+    color: '#7C3AED',
+    db: 'shifer',
+    items: [
+      { path: '/shifer/clinker-factor',       label: 'Клинкер омил', icon: Activity },
+      { path: '/shifer/clinker-factor-trend', label: 'Омил тренди',  icon: TrendingDown },
+    ],
+  },
+  {
+    id: 'shifer-quality',
+    label: 'Шифер · Сифат',
+    color: '#DC2626',
+    db: 'shifer',
+    items: [
+      { path: '/shifer/defect-details', label: 'Нуқсон тафсилоти', icon: AlertTriangle },
+    ],
+  },
+  {
+    id: 'shifer-cost',
+    label: 'Шифер · Харажатлар',
+    color: '#1B3A8C',
+    db: 'shifer',
+    items: [
+      { path: '/shifer/cost-structure',     label: 'Харажат структураси', icon: BookOpen },
+      { path: '/shifer/cost-summary',       label: 'Харажат хулосаси',    icon: DollarSign },
+      { path: '/shifer/cost-trend-monthly', label: 'Ойлик тренд',         icon: TrendingUp },
+    ],
+  },
+  {
+    id: 'shifer-inventory',
+    label: 'Шифер · Омбор',
+    color: '#64748B',
+    db: 'shifer',
+    items: [
+      { path: '/shifer/inventory-transfer', label: 'Ўтказма сўровлари', icon: ArrowRightLeft },
     ],
   },
 ];

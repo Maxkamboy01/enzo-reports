@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
+import { dashShifer } from './services/apiShifer';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -115,6 +116,34 @@ export default function App() {
               {/* ── Shifer routes ── */}
               <Route path="/shifer/production-performance" element={<DBRoute db="shifer"><ShiferProductionPerformance /></DBRoute>} />
               <Route path="/shifer/issue-materials"        element={<DBRoute db="shifer"><ShiferIssueItemMetaterials /></DBRoute>} />
+
+              <Route path="/shifer/mill-production"    element={<DBRoute db="shifer"><MillProduction   fetcher={dashShifer.millProduction} /></DBRoute>} />
+              <Route path="/shifer/volume-daily"       element={<DBRoute db="shifer"><VolumeDaily      fetcher={dashShifer.volumeDaily} /></DBRoute>} />
+              <Route path="/shifer/shift-performance"  element={<DBRoute db="shifer"><ShiftPerformance fetcher={dashShifer.shiftPerformance} /></DBRoute>} />
+
+              <Route path="/shifer/raw-materials-stock"        element={<DBRoute db="shifer"><RawMaterialsStock       fetcher={dashShifer.rawMaterialsStock} /></DBRoute>} />
+              <Route path="/shifer/raw-material-receipt"       element={<DBRoute db="shifer"><RawMaterialReceipt      fetcher={dashShifer.rawMaterialReceipt} /></DBRoute>} />
+              <Route path="/shifer/raw-material-consumption"   element={<DBRoute db="shifer"><RawMaterialConsumption  fetcher={dashShifer.rawMaterialConsumption} /></DBRoute>} />
+              <Route path="/shifer/raw-material-movement"      element={<DBRoute db="shifer"><RawMaterialMovement     fetcher={dashShifer.rawMaterialMovement} /></DBRoute>} />
+              <Route path="/shifer/raw-material-pivot"         element={<DBRoute db="shifer"><RawMaterialPivot        fetcher={dashShifer.rawMaterialPivot} /></DBRoute>} />
+              <Route path="/shifer/material-vs-bom"            element={<DBRoute db="shifer"><MaterialVsBom           fetcher={dashShifer.materialVsBom} /></DBRoute>} />
+              <Route path="/shifer/material-overconsumption"   element={<DBRoute db="shifer"><MaterialOverconsumption fetcher={dashShifer.materialOverconsumption} /></DBRoute>} />
+              <Route path="/shifer/material-consumption-shift" element={<DBRoute db="shifer"><MaterialConsumptionShift fetcher={dashShifer.materialConsumptionShift} /></DBRoute>} />
+
+              <Route path="/shifer/silo-stock"                   element={<DBRoute db="shifer"><SiloStock                 fetcher={dashShifer.siloStock} /></DBRoute>} />
+              <Route path="/shifer/cement-consumption"           element={<DBRoute db="shifer"><CementConsumption         fetcher={dashShifer.cementConsumption} /></DBRoute>} />
+              <Route path="/shifer/cement-additive-composition"  element={<DBRoute db="shifer"><CementAdditiveComposition fetcher={dashShifer.cementAdditiveComposition} /></DBRoute>} />
+
+              <Route path="/shifer/clinker-factor"       element={<DBRoute db="shifer"><ClinkerFactor      fetcher={dashShifer.clinkerFactor} /></DBRoute>} />
+              <Route path="/shifer/clinker-factor-trend" element={<DBRoute db="shifer"><ClinkerFactorTrend fetcher={dashShifer.clinkerFactorTrend} /></DBRoute>} />
+
+              <Route path="/shifer/defect-details" element={<DBRoute db="shifer"><DefectDetails fetcher={dashShifer.defectDetails} /></DBRoute>} />
+
+              <Route path="/shifer/cost-structure"     element={<DBRoute db="shifer"><CostStructure    fetcher={dashShifer.costStructure} /></DBRoute>} />
+              <Route path="/shifer/cost-summary"       element={<DBRoute db="shifer"><CostSummary      fetcher={dashShifer.costSummary} /></DBRoute>} />
+              <Route path="/shifer/cost-trend-monthly" element={<DBRoute db="shifer"><CostTrendMonthly fetcher={dashShifer.costTrendMonthly} /></DBRoute>} />
+
+              <Route path="/shifer/inventory-transfer" element={<DBRoute db="shifer"><InventoryTransfer fetcher={dashShifer.inventoryTransfer} /></DBRoute>} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

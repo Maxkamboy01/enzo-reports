@@ -49,11 +49,11 @@ function Chart({ rows }) {
   );
 }
 
-export default function ShiftPerformance() {
+export default function ShiftPerformance({ fetcher = dash.shiftPerformance }) {
   return (
     <DataPage
       queryKey="shift-performance"
-      fetcher={dash.shiftPerformance}
+      fetcher={fetcher}
       title="Смена кўрсаткичлари"
       subtitle="Shift Performance — смена бўйича ишлаб чиқариш самарадорлиги"
       columns={COLS}

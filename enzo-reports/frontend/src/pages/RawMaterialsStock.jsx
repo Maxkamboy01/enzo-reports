@@ -3,10 +3,10 @@ import { dash, fmt, fmtFull } from '../services/api';
 import { RefreshCw, Download, Package } from 'lucide-react';
 import styles from './StockPage.module.css';
 
-export default function RawMaterialsStock() {
+export default function RawMaterialsStock({ fetcher = dash.rawMaterialsStock }) {
   const { data = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ['raw-materials-stock'],
-    queryFn: dash.rawMaterialsStock,
+    queryFn: fetcher,
     staleTime: 60000,
   });
 

@@ -41,11 +41,11 @@ function Chart({ rows }) {
   );
 }
 
-export default function MaterialConsumptionShift() {
+export default function MaterialConsumptionShift({ fetcher = dash.materialConsumptionShift }) {
   return (
     <DataPage
       queryKey="material-consumption-shift"
-      fetcher={dash.materialConsumptionShift}
+      fetcher={fetcher}
       title="Смена бўйича материал сарфи"
       subtitle="Material Consumption Shift — сменалар кесимида сарф таҳлили"
       columns={COLS}

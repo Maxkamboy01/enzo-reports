@@ -19,11 +19,11 @@ const AREAS = [
   { key: 'zala', label: 'Зала', color: '#0891B2' },
 ];
 
-export default function RawMaterialConsumption() {
+export default function RawMaterialConsumption({ fetcher = dash.rawMaterialConsumption }) {
   return (
     <DataPage
       queryKey="raw-material-consumption"
-      fetcher={dash.rawMaterialConsumption}
+      fetcher={fetcher}
       title="Хом ашё сарфи"
       subtitle="Кунлик истеъмол хисоботи"
       columns={COLS}

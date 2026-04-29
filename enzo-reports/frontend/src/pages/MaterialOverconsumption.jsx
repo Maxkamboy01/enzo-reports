@@ -47,11 +47,11 @@ function Chart({ rows }) {
   );
 }
 
-export default function MaterialOverconsumption() {
+export default function MaterialOverconsumption({ fetcher = dash.materialOverconsumption }) {
   return (
     <DataPage
       queryKey="material-overconsumption"
-      fetcher={dash.materialOverconsumption}
+      fetcher={fetcher}
       title="Ортиқча материал сарфи"
       subtitle="Material Overconsumption — норма ошган сарф таҳлили"
       columns={COLS}

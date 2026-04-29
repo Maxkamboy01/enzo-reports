@@ -21,11 +21,11 @@ const COLS = [
   }},
 ];
 
-export default function MillProduction() {
+export default function MillProduction({ fetcher = dash.millProduction }) {
   return (
     <DataPage
       queryKey="mill-production"
-      fetcher={dash.millProduction}
+      fetcher={fetcher}
       title="Тегирмон ишлаб чиқариши"
       subtitle="Режа ва факт солиштириш"
       columns={COLS}

@@ -17,11 +17,11 @@ const COLS = [
   { key: 'quantity', label: 'Миқдор (кг)', right: true, render: v => fmtFull(v) },
 ];
 
-export default function InventoryTransfer() {
+export default function InventoryTransfer({ fetcher = dash.inventoryTransfer }) {
   return (
     <DataPage
       queryKey="inventory-transfer"
-      fetcher={dash.inventoryTransfer}
+      fetcher={fetcher}
       title="Омбор ўтказмаси"
       subtitle="Складлар ўртасида ўтказмалар"
       columns={COLS}

@@ -59,11 +59,11 @@ function Chart({ rows }) {
   );
 }
 
-export default function CostStructure() {
+export default function CostStructure({ fetcher = dash.costStructure }) {
   return (
     <DataPage
       queryKey="cost-structure"
-      fetcher={dash.costStructure}
+      fetcher={fetcher}
       title="Харажат структураси"
       subtitle="Cost Structure — ишлаб чиқариш харажатлари тузилмаси"
       columns={COLS}

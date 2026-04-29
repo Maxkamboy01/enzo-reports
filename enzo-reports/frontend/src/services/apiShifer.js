@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// All /api-shifer/* calls are proxied to http://backend-greymix.bis-apps.com
 const apiShifer = axios.create({ baseURL: '' });
 
 apiShifer.interceptors.request.use(cfg => {
@@ -22,7 +21,6 @@ apiShifer.interceptors.response.use(
 
 export default apiShifer;
 
-// Param mapper — Shifer uses camelCase startDate/endDate
 const p = ({ dateFrom, dateTo, itemCode, whsCode, pageSize, skip } = {}) => ({
   startDate:  dateFrom,
   endDate:    dateTo,
@@ -35,7 +33,46 @@ const p = ({ dateFrom, dateTo, itemCode, whsCode, pageSize, skip } = {}) => ({
 const list = url => params =>
   apiShifer.get(url, { params: p(params) }).then(r => r.data?.data ?? r.data ?? []);
 
+const noParams = url => () =>
+  apiShifer.get(url).then(r => r.data?.data ?? r.data ?? []);
+
 export const dashShifer = {
+  // Shifer-specific
   productionPerformReports: list('/api-shifer/api/dashboard/production-perform-reports'),
   issueItemMetaterials:     list('/api-shifer/api/dashboard/issue-item-metaterials'),
+
+  // Production
+  millProduction:            list('/api-shifer/api/dashboard/mill-production'),
+  volumeDaily:               list('/api-shifer/api/dashboard/volume-daily'),
+  shiftPerformance:          list('/api-shifer/api/dashboard/shift-performance'),
+
+  // Raw materials
+  rawMaterialsStock:         noParams('/api-shifer/api/dashboard/raw-materials-stock'),
+  rawMaterialReceipt:        list('/api-shifer/api/dashboard/raw-material-receipt'),
+  rawMaterialConsumption:    list('/api-shifer/api/dashboard/raw-material-consumption'),
+  rawMaterialMovement:       list('/api-shifer/api/dashboard/raw-material-movement'),
+  rawMaterialPivot:          list('/api-shifer/api/dashboard/raw-material-pivot'),
+  materialVsBom:             list('/api-shifer/api/dashboard/material-vs-bom'),
+  materialOverconsumption:   list('/api-shifer/api/dashboard/material-overconsumption'),
+  materialConsumptionShift:  list('/api-shifer/api/dashboard/material-consumption-shift'),
+
+  // Silo & Cement
+  siloStock:                 noParams('/api-shifer/api/dashboard/silo-stock'),
+  cementConsumption:         list('/api-shifer/api/dashboard/cement-consumption'),
+  cementAdditiveComposition: list('/api-shifer/api/dashboard/cement-additive-composition'),
+
+  // Clinker
+  clinkerFactor:             list('/api-shifer/api/dashboard/clinker-factor'),
+  clinkerFactorTrend:        list('/api-shifer/api/dashboard/clinker-factor-trend'),
+
+  // Quality
+  defectDetails:             list('/api-shifer/api/dashboard/defect-details'),
+
+  // Cost
+  costStructure:             list('/api-shifer/api/dashboard/cost-structure'),
+  costSummary:               list('/api-shifer/api/dashboard/cost-summy'),
+  costTrendMonthly:          list('/api-shifer/api/dashboard/cost-trend-monthly'),
+
+  // Inventory
+  inventoryTransfer:         list('/api-shifer/api/dashboard/inventory-transfer-request'),
 };

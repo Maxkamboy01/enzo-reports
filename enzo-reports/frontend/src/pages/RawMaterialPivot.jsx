@@ -4,14 +4,14 @@ import { dash, fmtFull } from '../services/api';
 import { RefreshCw, Download } from 'lucide-react';
 import styles from './Pivot.module.css';
 
-export default function RawMaterialPivot() {
+export default function RawMaterialPivot({ fetcher = dash.rawMaterialPivot }) {
   const today = new Date();
   const [month, setMonth] = useState(today.toISOString().slice(0, 7));
   const [applied, setApplied] = useState(month);
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ['raw-material-pivot', applied],
-    queryFn: () => dash.rawMaterialPivot({ month: applied }),
+    queryFn: () => fetcher({ month: applied }),
     staleTime: 60000,
   });
 
