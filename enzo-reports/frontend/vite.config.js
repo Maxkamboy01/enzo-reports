@@ -13,6 +13,13 @@ export default defineConfig({
         secure: false,
         rewrite: path => path.replace(/^\/api-shifer/, ''),
       },
+      // JBI (Temir Beton)
+      '/api-jbi': {
+        target: 'https://backend-greymix-jbi.bis-apps.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: path => path.replace(/^\/api-jbi/, ''),
+      },
       // Cement (Grey Mix Sement)
       '/api': {
         target: 'https://backend-greymix-sement.bis-apps.com',

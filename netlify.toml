@@ -4,6 +4,12 @@
   publish = "dist"
 
 [[redirects]]
+  from   = "/api-jbi/*"
+  to     = "https://backend-greymix-jbi.bis-apps.com/:splat"
+  status = 200
+  force  = true
+
+[[redirects]]
   from   = "/api-shifer/*"
   to     = "https://backend-greymix.bis-apps.com/:splat"
   status = 200

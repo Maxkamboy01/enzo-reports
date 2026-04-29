@@ -188,6 +188,73 @@ const SECTIONS = [
       { path: '/shifer/inventory-transfer', label: 'Ўтказма сўровлари', icon: ArrowRightLeft },
     ],
   },
+  // ── JBI sections ─────────────────────────────────
+  {
+    id: 'jbi-production',
+    label: 'ЖБИ · Ишлаб чиқариш',
+    color: '#7C3AED',
+    db: 'jbi',
+    items: [
+      { path: '/jbi/mill-production', label: 'Тегирмон ишлаб чиқариши', icon: GitCompare },
+      { path: '/jbi/volume-daily',    label: 'Кунлик ҳажм',              icon: BarChart2 },
+    ],
+  },
+  {
+    id: 'jbi-rawmat',
+    label: 'ЖБИ · Хом ашё',
+    color: '#D97706',
+    db: 'jbi',
+    items: [
+      { path: '/jbi/raw-materials-stock',        label: 'Қолдиқлар',         icon: Package },
+      { path: '/jbi/raw-material-receipt',       label: 'Кириш',              icon: TrendingUp },
+      { path: '/jbi/raw-material-consumption',   label: 'Сарф',               icon: TrendingDown },
+      { path: '/jbi/raw-material-movement',      label: 'Ҳаракат',            icon: ArrowLeftRight },
+      { path: '/jbi/raw-material-pivot',         label: 'Пивот жадвал',       icon: Table2 },
+      { path: '/jbi/material-vs-bom',            label: 'vs BOM',             icon: Scale },
+      { path: '/jbi/material-overconsumption',   label: 'Ортиқча сарф',       icon: AlertTriangle },
+      { path: '/jbi/material-consumption-shift', label: 'Смена бўйича сарф',  icon: Layers },
+    ],
+  },
+  {
+    id: 'jbi-silo',
+    label: 'ЖБИ · Силос & Цемент',
+    color: '#0891B2',
+    db: 'jbi',
+    items: [
+      { path: '/jbi/silo-stock',                  label: 'Силос қолдиқлари',   icon: Database },
+      { path: '/jbi/cement-consumption',          label: 'Цемент сарфи',       icon: Cog },
+      { path: '/jbi/cement-additive-composition', label: 'Қўшимчалар таркиби', icon: FlaskConical },
+    ],
+  },
+  {
+    id: 'jbi-quality',
+    label: 'ЖБИ · Сифат',
+    color: '#DC2626',
+    db: 'jbi',
+    items: [
+      { path: '/jbi/defect-details', label: 'Нуқсон тафсилоти', icon: AlertTriangle },
+    ],
+  },
+  {
+    id: 'jbi-cost',
+    label: 'ЖБИ · Харажатлар',
+    color: '#7C3AED',
+    db: 'jbi',
+    items: [
+      { path: '/jbi/cost-structure',     label: 'Харажат структураси', icon: BookOpen },
+      { path: '/jbi/cost-summary',       label: 'Харажат хулосаси',    icon: DollarSign },
+      { path: '/jbi/cost-trend-monthly', label: 'Ойлик тренд',         icon: TrendingUp },
+    ],
+  },
+  {
+    id: 'jbi-inventory',
+    label: 'ЖБИ · Омбор',
+    color: '#64748B',
+    db: 'jbi',
+    items: [
+      { path: '/jbi/inventory-transfer', label: 'Ўтказма сўровлари', icon: ArrowRightLeft },
+    ],
+  },
 ];
 
 function SidebarSection({ section }) {

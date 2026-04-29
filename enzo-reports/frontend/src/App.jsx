@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
 import { dashShifer } from './services/apiShifer';
+import { dashJbi } from './services/apiJbi';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -60,7 +61,7 @@ function SmartHome() {
   const { dbTokens } = useAuth();
   if (dbTokens.cement) return <Dashboard />;
   if (dbTokens.shifer) return <Navigate to="/shifer/production-performance" replace />;
-  if (dbTokens.jbi)    return <Navigate to="/" replace />;
+  if (dbTokens.jbi)    return <Navigate to="/jbi/mill-production" replace />;
   return <Dashboard />;
 }
 
@@ -68,9 +69,9 @@ function SmartHome() {
 function DBRoute({ db, children }) {
   const { dbTokens } = useAuth();
   if (dbTokens[db]) return children;
-  // Redirect to their actual home
   if (dbTokens.cement) return <Navigate to="/" replace />;
   if (dbTokens.shifer) return <Navigate to="/shifer/production-performance" replace />;
+  if (dbTokens.jbi)    return <Navigate to="/jbi/mill-production" replace />;
   return <Navigate to="/login" replace />;
 }
 
@@ -144,6 +145,31 @@ export default function App() {
               <Route path="/shifer/cost-trend-monthly" element={<DBRoute db="shifer"><CostTrendMonthly fetcher={dashShifer.costTrendMonthly} /></DBRoute>} />
 
               <Route path="/shifer/inventory-transfer" element={<DBRoute db="shifer"><InventoryTransfer fetcher={dashShifer.inventoryTransfer} /></DBRoute>} />
+
+              {/* ── JBI routes ── */}
+              <Route path="/jbi/mill-production" element={<DBRoute db="jbi"><MillProduction fetcher={dashJbi.millProduction} /></DBRoute>} />
+              <Route path="/jbi/volume-daily"    element={<DBRoute db="jbi"><VolumeDaily    fetcher={dashJbi.volumeDaily} /></DBRoute>} />
+
+              <Route path="/jbi/raw-materials-stock"        element={<DBRoute db="jbi"><RawMaterialsStock       fetcher={dashJbi.rawMaterialsStock} /></DBRoute>} />
+              <Route path="/jbi/raw-material-receipt"       element={<DBRoute db="jbi"><RawMaterialReceipt      fetcher={dashJbi.rawMaterialReceipt} /></DBRoute>} />
+              <Route path="/jbi/raw-material-consumption"   element={<DBRoute db="jbi"><RawMaterialConsumption  fetcher={dashJbi.rawMaterialConsumption} /></DBRoute>} />
+              <Route path="/jbi/raw-material-movement"      element={<DBRoute db="jbi"><RawMaterialMovement     fetcher={dashJbi.rawMaterialMovement} /></DBRoute>} />
+              <Route path="/jbi/raw-material-pivot"         element={<DBRoute db="jbi"><RawMaterialPivot        fetcher={dashJbi.rawMaterialPivot} /></DBRoute>} />
+              <Route path="/jbi/material-vs-bom"            element={<DBRoute db="jbi"><MaterialVsBom           fetcher={dashJbi.materialVsBom} /></DBRoute>} />
+              <Route path="/jbi/material-overconsumption"   element={<DBRoute db="jbi"><MaterialOverconsumption fetcher={dashJbi.materialOverconsumption} /></DBRoute>} />
+              <Route path="/jbi/material-consumption-shift" element={<DBRoute db="jbi"><MaterialConsumptionShift fetcher={dashJbi.materialConsumptionShift} /></DBRoute>} />
+
+              <Route path="/jbi/silo-stock"                   element={<DBRoute db="jbi"><SiloStock                 fetcher={dashJbi.siloStock} /></DBRoute>} />
+              <Route path="/jbi/cement-consumption"           element={<DBRoute db="jbi"><CementConsumption         fetcher={dashJbi.cementConsumption} /></DBRoute>} />
+              <Route path="/jbi/cement-additive-composition"  element={<DBRoute db="jbi"><CementAdditiveComposition fetcher={dashJbi.cementAdditiveComposition} /></DBRoute>} />
+
+              <Route path="/jbi/defect-details" element={<DBRoute db="jbi"><DefectDetails fetcher={dashJbi.defectDetails} /></DBRoute>} />
+
+              <Route path="/jbi/cost-structure"     element={<DBRoute db="jbi"><CostStructure    fetcher={dashJbi.costStructure} /></DBRoute>} />
+              <Route path="/jbi/cost-summary"       element={<DBRoute db="jbi"><CostSummary      fetcher={dashJbi.costSummary} /></DBRoute>} />
+              <Route path="/jbi/cost-trend-monthly" element={<DBRoute db="jbi"><CostTrendMonthly fetcher={dashJbi.costTrendMonthly} /></DBRoute>} />
+
+              <Route path="/jbi/inventory-transfer" element={<DBRoute db="jbi"><InventoryTransfer fetcher={dashJbi.inventoryTransfer} /></DBRoute>} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

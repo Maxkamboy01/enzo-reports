@@ -79,8 +79,16 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(DB_META.shifer.token);
       setDbTokens(t => ({ ...t, shifer: false }));
     };
+    const onJbiErr = () => {
+      localStorage.removeItem(DB_META.jbi.token);
+      setDbTokens(t => ({ ...t, jbi: false }));
+    };
     window.addEventListener('shifer-auth-error', onShiferErr);
-    return () => window.removeEventListener('shifer-auth-error', onShiferErr);
+    window.addEventListener('jbi-auth-error', onJbiErr);
+    return () => {
+      window.removeEventListener('shifer-auth-error', onShiferErr);
+      window.removeEventListener('jbi-auth-error', onJbiErr);
+    };
   }, []);
 
   const login = useCallback(async (credentials) => {
