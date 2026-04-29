@@ -120,3 +120,18 @@ select.input { cursor: pointer; }
   border: 2px solid var(--grey-300); border-top-color: var(--primary);
   border-radius: 50%; animation: spin 0.7s linear infinite;
 }
+
+/* Mobile responsive */
+@media (max-width: 767px) {
+  .page { gap: 10px; }
+  .pageHeader { flex-direction: column; gap: 10px; }
+  .actions { width: 100%; }
+  .refreshBtn, .csvBtn { flex: 1; justify-content: center; }
+  .filterBar { padding: 10px 12px; gap: 8px; }
+  .filterRow { gap: 8px; }
+  .fg { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .applyBtn { width: 100%; text-align: center; }
+  .numTh, .th, .thR { padding: 7px 8px; font-size: 0.65rem; }
+  .numTd, .td, .tdR { padding: 7px 8px; font-size: 0.75rem; }
+  .title { font-size: 1rem; }
+}

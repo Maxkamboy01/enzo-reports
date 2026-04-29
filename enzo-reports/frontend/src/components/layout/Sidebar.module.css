@@ -221,6 +221,123 @@
 
 .logoutBtn:hover { background: #FEF2F2 !important; color: #DC2626 !important; }
 
+/* ── Collapsed mode ── */
+.collapsed { overflow: visible !important; }
+.collapsed .nav { overflow: visible; }
+
+/* Plain items in collapsed mode (dashboard icon) */
+.collapsedPlain {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 2px;
+  padding: 4px 0;
+  margin-bottom: 2px;
+}
+
+.collapsedIcon {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 34px;
+  border-radius: var(--radius-md);
+  color: var(--grey-500);
+  transition: var(--t-fast);
+  text-decoration: none;
+}
+.collapsedIcon:hover { background: var(--grey-100); color: var(--grey-900); }
+.collapsedIconActive {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+}
+
+/* Collapsed section group — dot trigger + flyout */
+.collapsedGroup {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 2px 0;
+}
+
+.collapsedGroupTrigger {
+  width: 36px; height: 34px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: var(--t-fast);
+}
+.collapsedGroupTrigger:hover { background: var(--grey-100); }
+.collapsedGroupActive {
+  background: color-mix(in srgb, var(--s-color, var(--primary)) 12%, transparent);
+}
+
+.collapsedDot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* Flyout panel — appears on hover */
+.flyout {
+  display: none;
+  position: absolute;
+  left: 52px;
+  top: 0;
+  min-width: 210px;
+  background: #fff;
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 300;
+  padding: 6px;
+  flex-direction: column;
+}
+
+.collapsedGroup:hover .flyout { display: flex; }
+
+.flyoutTitle {
+  font-size: 0.62rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 4px 8px 6px;
+  opacity: 0.8;
+}
+
+.flyoutItem {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem; font-weight: 400;
+  color: var(--grey-700);
+  text-decoration: none;
+  transition: var(--t-fast);
+  white-space: nowrap;
+}
+.flyoutItem:hover { background: var(--grey-100); color: var(--grey-900); }
+.flyoutItemActive {
+  background: color-mix(in srgb, var(--s-color, var(--primary)) 10%, transparent);
+  color: var(--s-color, var(--primary));
+  font-weight: 600;
+}
+.flyoutIcon { flex-shrink: 0; opacity: 0.7; }
+.flyoutItemActive .flyoutIcon { opacity: 1; }
+
+/* ── Mobile overlay ── */
+.mobileBackdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease, width 0.22s ease;
+    width: 240px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 200;
+  }
+  .mobileOpen {
+    transform: translateX(0);
+  }
+  .collapseBtn { display: none; }
+}
+
 /* ── Settings panel ── */
 .settingsWrap { position: relative; }
 

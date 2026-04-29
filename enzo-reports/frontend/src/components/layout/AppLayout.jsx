@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import MobileBottomNav from './MobileBottomNav';
 import styles from './AppLayout.module.css';
 
 const SIDEBAR_FULL = 240;
@@ -11,6 +12,7 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('sidebar_collapsed') === 'true'
   );
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const toggle = () => {
     setCollapsed(c => {
@@ -24,15 +26,21 @@ export default function AppLayout() {
 
   return (
     <div className={styles.layout}>
-      <Sidebar collapsed={collapsed} onToggle={toggle} />
-      <div className={styles.main} style={{ marginLeft: sidebarW }}>
-        <Header />
+      <Sidebar
+        collapsed={collapsed}
+        onToggle={toggle}
+        mobileOpen={mobileOpen}
+        onMobileClose={() => setMobileOpen(false)}
+      />
+      <div className={styles.main} style={{ '--sidebar-w': sidebarW + 'px' }}>
+        <Header onMenuOpen={() => setMobileOpen(true)} sidebarW={sidebarW} />
         <main className={styles.content}>
           <div className={styles.inner}>
             <Outlet />
           </div>
         </main>
       </div>
+      <MobileBottomNav />
     </div>
   );
 }
