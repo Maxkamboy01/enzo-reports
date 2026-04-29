@@ -25,6 +25,37 @@
 .csvBtn:disabled { opacity: 0.5; }
 .spin { animation: spin 0.8s linear infinite; }
 
+/* Search */
+.searchWrap {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff;
+  border: 1.5px solid var(--grey-300);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--t-fast);
+}
+.searchWrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+.searchIcon { color: var(--grey-400); flex-shrink: 0; }
+.searchInput {
+  flex: 1; border: none; outline: none; font-size: 0.88rem;
+  color: var(--grey-900); background: transparent;
+}
+.searchInput::placeholder { color: var(--grey-400); }
+.searchClear {
+  padding: 2px; border-radius: 4px; background: var(--grey-200);
+  color: var(--grey-500); transition: var(--t-fast); flex-shrink: 0;
+}
+.searchClear:hover { background: var(--grey-300); color: var(--grey-700); }
+
+.noResults {
+  grid-column: 1 / -1;
+  padding: 40px;
+  text-align: center;
+  color: var(--grey-500);
+  font-size: 0.88rem;
+}
+
 /* Summary cards */
 .sumGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 

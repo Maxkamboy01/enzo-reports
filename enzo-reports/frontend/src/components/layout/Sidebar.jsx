@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useI18n } from '../../context/I18nContext';
 import {
@@ -286,7 +286,6 @@ function SettingsPanel({ onClose }) {
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
   const { user, logout, dbTokens } = useAuth();
   const { t } = useI18n();
-  const [showSettings, setShowSettings] = useState(false);
 
   const visibleSections = SECTIONS.filter(s => !s.db || dbTokens[s.db]);
 
@@ -354,13 +353,9 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
             )}
           </div>
           <div className={styles.footerActions}>
-            <div className={styles.settingsWrap}>
-              <button className={styles.iconBtn} onClick={() => setShowSettings(s => !s)}
-                title={t('settings.title')}>
-                <Settings size={14} />
-              </button>
-              {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
-            </div>
+            <Link to="/settings" className={styles.iconBtn} title={t('settings.title')} onClick={onMobileClose}>
+              <Settings size={14} />
+            </Link>
             <button className={`${styles.iconBtn} ${styles.logoutBtn}`}
               onClick={logout} title={t('ui.logout')}>
               <LogOut size={14} />

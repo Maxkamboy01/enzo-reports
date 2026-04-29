@@ -25,9 +25,10 @@ const LANGS = {
 
     'ui.refresh':'Янгилаш','ui.export_csv':'CSV','ui.search':'Қидириш',
     'ui.from':'Дан','ui.to':'Гача','ui.loading':'Юкланяпти...',
-    'ui.no_data':'Маълумот топилмади','ui.records':'та ёзув','ui.logout':'Чиқиш',
+    'ui.no_data':'Маълумот топилмади','ui.records':'та ёзув','ui.logout':'Чиқиш','ui.back':'Орқага',
 
-    'settings.title':'Созламалар','settings.language':'Тил',
+    'settings.title':'Созламалар','settings.sub':'Сайт созламалари',
+    'settings.language':'Тил','settings.lang_desc':'Интерфейс тилини танланг',
     'settings.connected_dbs':'Уланган базалар',
 
     'login.title':'Tizimga kirish','login.subtitle':"SAP B1 xodim ma'lumotlari",
@@ -65,9 +66,10 @@ const LANGS = {
 
     'ui.refresh':'Обновить','ui.export_csv':'CSV','ui.search':'Поиск',
     'ui.from':'От','ui.to':'До','ui.loading':'Загрузка...',
-    'ui.no_data':'Данные не найдены','ui.records':'записей','ui.logout':'Выход',
+    'ui.no_data':'Данные не найдены','ui.records':'записей','ui.logout':'Выход','ui.back':'Назад',
 
-    'settings.title':'Настройки','settings.language':'Язык',
+    'settings.title':'Настройки','settings.sub':'Параметры сайта',
+    'settings.language':'Язык','settings.lang_desc':'Выберите язык интерфейса',
     'settings.connected_dbs':'Подключённые БД',
 
     'login.title':'Вход в систему','login.subtitle':'Данные сотрудника SAP B1',
@@ -105,9 +107,10 @@ const LANGS = {
 
     'ui.refresh':'Refresh','ui.export_csv':'CSV','ui.search':'Search',
     'ui.from':'From','ui.to':'To','ui.loading':'Loading...',
-    'ui.no_data':'No data found','ui.records':'records','ui.logout':'Logout',
+    'ui.no_data':'No data found','ui.records':'records','ui.logout':'Logout','ui.back':'Back',
 
-    'settings.title':'Settings','settings.language':'Language',
+    'settings.title':'Settings','settings.sub':'Website preferences',
+    'settings.language':'Language','settings.lang_desc':'Choose interface language',
     'settings.connected_dbs':'Connected Databases',
 
     'login.title':'Sign In','login.subtitle':'SAP B1 Employee Credentials',

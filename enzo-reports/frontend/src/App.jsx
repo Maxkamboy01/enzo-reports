@@ -43,6 +43,7 @@ import CostTrendMonthly from './pages/CostTrendMonthly';
 
 // Inventory
 import InventoryTransfer from './pages/InventoryTransfer';
+import Settings from './pages/Settings';
 
 // Shifer (Grey Mix)
 import ShiferProductionPerformance from './pages/shifer/ShiferProductionPerformance';
@@ -172,6 +173,9 @@ export default function App() {
               <Route path="/jbi/cost-trend-monthly" element={<DBRoute db="jbi"><CostTrendMonthly fetcher={dashJbi.costTrendMonthly} /></DBRoute>} />
 
               <Route path="/jbi/inventory-transfer" element={<DBRoute db="jbi"><InventoryTransfer fetcher={dashJbi.inventoryTransfer} /></DBRoute>} />
+
+              {/* Settings */}
+              <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
