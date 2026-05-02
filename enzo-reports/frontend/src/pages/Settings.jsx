@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../context/I18nContext';
 import { useAuth } from '../context/AuthContext';
-import { Globe, Database, CheckCircle, XCircle, LogOut, ChevronLeft } from 'lucide-react';
+import { Globe, Database, CheckCircle, XCircle, LogOut, ChevronLeft, Key, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import styles from './Settings.module.css';
 
 const LANGS = [
@@ -12,8 +13,22 @@ const LANGS = [
 
 export default function Settings() {
   const { lang, changeLang, t } = useI18n();
-  const { user, dbTokens, DB_META, logout } = useAuth();
+  const { user, dbTokens, DB_META, logout, setManualToken } = useAuth();
   const navigate = useNavigate();
+
+  const [expanded, setExpanded] = useState(null);
+  const [tokenInputs, setTokenInputs] = useState({ cement: '', shifer: '', jbi: '' });
+  const [saved, setSaved] = useState({});
+
+  const handleSave = (db) => {
+    const val = tokenInputs[db]?.trim();
+    if (!val) return;
+    setManualToken(db, val);
+    setTokenInputs(p => ({ ...p, [db]: '' }));
+    setSaved(p => ({ ...p, [db]: true }));
+    setTimeout(() => setSaved(p => ({ ...p, [db]: false })), 2000);
+    setExpanded(null);
+  };
 
   return (
     <div className={styles.page}>
@@ -47,15 +62,13 @@ export default function Settings() {
                 <div className={styles.langName}>{l.label}</div>
                 <div className={styles.langHint}>{l.desc}</div>
               </div>
-              {lang === l.code && (
-                <CheckCircle size={18} className={styles.langCheck} />
-              )}
+              {lang === l.code && <CheckCircle size={18} className={styles.langCheck} />}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Connected databases */}
+      {/* Connected databases + manual token */}
       <div className={styles.section}>
         <div className={styles.sectionHead}>
           <Database size={18} className={styles.sectionIcon} />
@@ -66,17 +79,53 @@ export default function Settings() {
         </div>
         <div className={styles.dbList}>
           {Object.entries(DB_META).map(([db, meta]) => (
-            <div key={db} className={styles.dbRow} style={{ '--db-color': meta.color }}>
-              <span className={styles.dbDot} style={{ background: meta.color }} />
-              <span className={styles.dbLabel}>{meta.label}</span>
-              {dbTokens[db] ? (
-                <span className={styles.dbStatus} style={{ color: '#059669' }}>
-                  <CheckCircle size={14} /> {t('token.connected')}
-                </span>
-              ) : (
-                <span className={styles.dbStatus} style={{ color: '#9CA3AF' }}>
-                  <XCircle size={14} /> {t('token.not_connected')}
-                </span>
+            <div key={db} className={styles.dbBlock}>
+              <div className={styles.dbRow} style={{ '--db-color': meta.color }}>
+                <span className={styles.dbDot} style={{ background: meta.color }} />
+                <span className={styles.dbLabel}>{meta.label}</span>
+                {dbTokens[db] || saved[db] ? (
+                  <span className={styles.dbStatus} style={{ color: '#059669' }}>
+                    <CheckCircle size={14} /> {saved[db] ? 'Saqlandi!' : t('token.connected')}
+                  </span>
+                ) : (
+                  <span className={styles.dbStatus} style={{ color: '#9CA3AF' }}>
+                    <XCircle size={14} /> {t('token.not_connected')}
+                  </span>
+                )}
+                <button
+                  className={styles.manualBtn}
+                  onClick={() => setExpanded(expanded === db ? null : db)}
+                  title="Token qo'lda kiritish"
+                >
+                  <Key size={13} />
+                  {expanded === db ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                </button>
+              </div>
+
+              {expanded === db && (
+                <div className={styles.tokenBox}>
+                  <p className={styles.tokenHint}>
+                    Swagger yoki SAP B1 dan Bearer tokenni shu yerga kiriting
+                  </p>
+                  <div className={styles.tokenRow}>
+                    <input
+                      className={styles.tokenInput}
+                      type="text"
+                      placeholder="Bearer eyJ..."
+                      value={tokenInputs[db]}
+                      onChange={e => setTokenInputs(p => ({ ...p, [db]: e.target.value }))}
+                      onKeyDown={e => e.key === 'Enter' && handleSave(db)}
+                    />
+                    <button
+                      className={styles.saveBtn}
+                      onClick={() => handleSave(db)}
+                      disabled={!tokenInputs[db]?.trim()}
+                    >
+                      <Save size={14} />
+                      Saqlash
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           ))}

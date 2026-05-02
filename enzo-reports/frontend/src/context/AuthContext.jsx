@@ -4,9 +4,9 @@ import axios from 'axios';
 const AuthContext = createContext(null);
 
 export const DB_META = {
-  cement: { token: 'enzo_token',        user: 'enzo_user_cement', label: 'Цемент · Sement',   color: '#1B3A8C', proxyBase: '' },
-  shifer: { token: 'enzo_token_shifer', user: 'enzo_user_shifer', label: 'Шифер · Grey Mix',  color: '#059669', proxyBase: '/api-shifer' },
-  jbi:    { token: 'enzo_token_jbi',    user: 'enzo_user_jbi',    label: 'ЖБИ · Temir Beton', color: '#7C3AED', proxyBase: '/api-jbi' },
+  cement: { token: 'enzo_token',        user: 'enzo_user_cement', label: 'Цемент · Sement',   color: '#1B3A8C', proxyBase: '',           authBase: null },
+  shifer: { token: 'enzo_token_shifer', user: 'enzo_user_shifer', label: 'Шифер · Grey Mix',  color: '#059669', proxyBase: '/api-shifer', authBase: null },
+  jbi:    { token: 'enzo_token_jbi',    user: 'enzo_user_jbi',    label: 'ЖБИ · Temir Beton', color: '#7C3AED', proxyBase: '/api-jbi',   authBase: '/.netlify/functions/jbi-auth' },
 };
 
 function readStore(key) {
@@ -14,18 +14,41 @@ function readStore(key) {
 }
 
 function extractUser(data, fallback) {
-  // Unwrap one level of { data: ... } if present
-  const d = (data?.data && typeof data.data === 'object') ? data.data : data;
-  if (!d || typeof d !== 'object') return null;
-  // Try every common token field name across different backend conventions
+  // Case 1: bare string JWT (backend returns just "eyJ...")
+  if (typeof data === 'string' && data.length > 20) {
+    if (!data.startsWith('eyJ')) return null;
+    return { name: fallback, jobTitle: '', employeeCode: fallback, token: data };
+  }
+
+  if (!data || typeof data !== 'object') return null;
+
+  // Case 2: { data: "eyJ..." } — data field is the token string itself
+  if (typeof data.data === 'string' && data.data.startsWith('eyJ')) {
+    return { name: fallback, jobTitle: '', employeeCode: fallback, token: data.data };
+  }
+
+  // Case 3: { result: "eyJ..." } or { value: "eyJ..." } or { token: "eyJ..." } at root
+  const rootStr = data.result ?? data.value ?? data.token ?? data.Token ?? data.accessToken;
+  if (typeof rootStr === 'string' && rootStr.startsWith('eyJ')) {
+    return { name: fallback, jobTitle: '', employeeCode: fallback, token: rootStr };
+  }
+
+  // Case 4: unwrap one level of { data: { ... } }
+  const d = (data.data && typeof data.data === 'object') ? data.data : data;
+
   const token =
     d.accessToken  ?? d.access_token  ?? d.AccessToken  ??
     d.token        ?? d.Token         ?? d.authToken     ??
     d.jwt          ?? d.JWT           ?? d.bearerToken   ??
     d.BearerToken  ?? d.sessionToken  ?? d.SessionId     ??
     d.jwtToken     ?? d.JwtToken      ?? d.TokenValue    ??
-    d.auth_token   ?? d.id_token;
-  if (!token || typeof token !== 'string') return null;
+    d.auth_token   ?? d.id_token      ?? d.AuthToken     ??
+    d.access       ?? d.result        ?? d.Result        ??
+    d.tokenValue   ?? d.bearer        ?? d.Bearer        ??
+    d.value        ?? d.Value;
+
+  if (!token || typeof token !== 'string' || !token.startsWith('eyJ')) return null;
+
   return {
     name: `${d.firstName || d.FirstName || ''} ${d.lastName || d.LastName || ''}`.trim()
           || d.fullName || d.FullName || d.name || d.Name
@@ -40,37 +63,61 @@ function extractUser(data, fallback) {
 async function tryAuth(url, body) {
   try {
     const res = await axios.post(url, body, { timeout: 8000 });
-    return extractUser(res.data, body.employeeCode || body.username || body.login || '');
+    const user = extractUser(res.data, body.employeeCode || body.username || body.login || '');
+    if (res.status === 200 && !user) {
+      console.warn('[auth] 200 but no token extracted from', url, res.data);
+    }
+    return user;
   } catch {
     return null;
   }
 }
 
 // Attempt login on a single backend using all known auth schemas
-async function loginToBackend(proxyBase, credentials) {
+async function loginToBackend(proxyBase, credentials, authBase = null) {
   const { employeeCode, externalEmployeeNumber, deviceId } = credentials;
   const dev = deviceId || 'web';
 
-  // Primary attempt — Shifer/JBI style (proven to work on Shifer)
-  const primaryBody = { employeeCode, externalEmployeeNumber, deviceId: dev };
-  const u1 = await tryAuth(`${proxyBase}/api/auth`, primaryBody);
-  if (u1) return u1;
+  const primary = { employeeCode, externalEmployeeNumber, deviceId: dev };
 
-  // Alternative body shapes some SAP B1 wrappers use
-  const altBodies = [
-    { employeeCode, password: externalEmployeeNumber, deviceId: dev },
-    { username: employeeCode, password: externalEmployeeNumber, deviceId: dev },
-    { username: employeeCode, externalEmployeeNumber, deviceId: dev },
+  // If a dedicated auth endpoint is configured (e.g. Netlify Function), try it first
+  if (authBase) {
+    const u = await tryAuth(authBase, primary);
+    if (u) return u;
+    // Alt bodies
+    for (const body of [
+      { employeeCode, password: externalEmployeeNumber, deviceId: dev },
+      { username: employeeCode, password: externalEmployeeNumber, deviceId: dev },
+    ]) {
+      const u2 = await tryAuth(authBase, body);
+      if (u2) return u2;
+    }
+    return null;
+  }
+
+  // Standard proxy path — try common auth endpoints
+  const paths = [
+    '/api/auth',
+    '/api/Auth',
+    '/auth',
+    '/api/auth/login',
+    '/api/Auth/Login',
+    '/api/account/login',
+    '/api/employees/login',
+    '/api/login',
   ];
 
-  for (const body of altBodies) {
-    const u = await tryAuth(`${proxyBase}/api/auth`, body);
+  for (const path of paths) {
+    const u = await tryAuth(`${proxyBase}${path}`, primary);
     if (u) return u;
   }
 
-  // Try secondary endpoint paths with the original body
-  for (const path of ['/api/auth/login', '/api/account/login', '/api/employees/login']) {
-    const u = await tryAuth(`${proxyBase}${path}`, primaryBody);
+  // Alt bodies on most likely paths
+  for (const body of [
+    { employeeCode, password: externalEmployeeNumber, deviceId: dev },
+    { username: employeeCode, password: externalEmployeeNumber, deviceId: dev },
+  ]) {
+    const u = await tryAuth(`${proxyBase}/api/auth`, body);
     if (u) return u;
   }
 
@@ -110,7 +157,7 @@ export function AuthProvider({ children }) {
     const results = await Promise.all(
       Object.entries(DB_META).map(async ([db, meta]) => ({
         db,
-        userObj: await loginToBackend(meta.proxyBase, credentials),
+        userObj: await loginToBackend(meta.proxyBase, credentials, meta.authBase),
       }))
     );
 
@@ -185,9 +232,25 @@ export function AuthProvider({ children }) {
 
   const getDbUser = useCallback((db) => readStore(DB_META[db]?.user), []);
 
+  const setManualToken = useCallback((db, token) => {
+    const meta = DB_META[db];
+    if (!meta || !token?.trim()) return;
+    const trimmed = token.trim().replace(/^Bearer\s+/i, '');
+    const fakeUser = { name: db.toUpperCase(), jobTitle: '', employeeCode: db, token: trimmed };
+    localStorage.setItem(meta.token, trimmed);
+    localStorage.setItem(meta.user, JSON.stringify(fakeUser));
+    if (db === 'cement') {
+      localStorage.setItem('enzo_token', trimmed);
+    }
+    // Always set enzo_user so isAuthenticated becomes true
+    localStorage.setItem('enzo_user', JSON.stringify(fakeUser));
+    setUser(fakeUser);
+    setDbTokens(t => ({ ...t, [db]: true }));
+  }, []);
+
   return (
     <AuthContext.Provider value={{
-      user, login, logout, clearDbToken, getDbUser,
+      user, login, logout, clearDbToken, getDbUser, setManualToken,
       dbTokens, DB_META,
       isAuthenticated: !!user,
     }}>

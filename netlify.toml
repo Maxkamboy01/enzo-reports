@@ -3,6 +3,9 @@
   command = "npm run build"
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+
 [[redirects]]
   from   = "/api-jbi/*"
   to     = "https://backend-greymix-jbi.bis-apps.com/:splat"

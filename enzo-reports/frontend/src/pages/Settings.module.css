@@ -74,11 +74,11 @@
 /* DB list */
 .dbList { display: flex; flex-direction: column; gap: 8px; }
 
+.dbBlock { display: flex; flex-direction: column; border: 1px solid var(--grey-200); border-radius: var(--radius-md); overflow: hidden; }
+
 .dbRow {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 14px;
-  border: 1px solid var(--grey-200);
-  border-radius: var(--radius-md);
   background: var(--grey-50);
 }
 
@@ -90,6 +90,43 @@
   display: flex; align-items: center; gap: 5px;
   font-size: 0.75rem; font-weight: 600;
 }
+
+.manualBtn {
+  display: flex; align-items: center; gap: 3px;
+  padding: 5px 8px; border-radius: var(--radius-sm);
+  background: #fff; border: 1px solid var(--grey-300);
+  color: var(--grey-500); font-size: 0.72rem;
+  transition: var(--t-fast); cursor: pointer;
+}
+.manualBtn:hover { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+
+.tokenBox {
+  padding: 12px 14px;
+  background: #fff;
+  border-top: 1px solid var(--grey-200);
+}
+
+.tokenHint { font-size: 0.72rem; color: var(--grey-500); margin-bottom: 8px; }
+
+.tokenRow { display: flex; gap: 8px; }
+
+.tokenInput {
+  flex: 1; padding: 8px 10px;
+  border: 1px solid var(--grey-300); border-radius: var(--radius-sm);
+  font-size: 0.78rem; font-family: monospace;
+  outline: none; transition: var(--t-fast);
+}
+.tokenInput:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow, rgba(27,58,140,0.08)); }
+
+.saveBtn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  background: var(--primary); color: #fff;
+  font-size: 0.8rem; font-weight: 600;
+  transition: var(--t-fast); white-space: nowrap;
+}
+.saveBtn:hover:not(:disabled) { background: var(--primary-light); }
+.saveBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Logout */
 .logoutBtn {
