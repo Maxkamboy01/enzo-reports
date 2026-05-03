@@ -49,10 +49,10 @@ function Chart({ rows }) {
   );
 }
 
-export default function ClinkerFactorTrend({ fetcher = dash.clinkerFactorTrend }) {
+export default function ClinkerFactorTrend({ fetcher = dash.clinkerFactorTrend, queryKey = 'clinker-factor-trend' }) {
   return (
     <DataPage
-      queryKey="clinker-factor-trend"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Клинкер омил тренди"
       subtitle="Clinker Factor Trend — даврий клинкер омил ўзгариши"

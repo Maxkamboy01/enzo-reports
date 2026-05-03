@@ -28,10 +28,10 @@ const tooltipStyle = {
   cursor: { fill: 'rgba(27,58,140,0.04)' },
 };
 
-export default function MillProduction({ fetcher = dash.millProduction }) {
+export default function MillProduction({ fetcher = dash.millProduction, queryKey = 'mill-production' }) {
   return (
     <DataPage
-      queryKey="mill-production"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Тегирмон ишлаб чиқариши"
       subtitle="Режа ва факт солиштириш"

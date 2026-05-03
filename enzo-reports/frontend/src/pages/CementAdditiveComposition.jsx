@@ -69,10 +69,10 @@ function Chart({ rows }) {
   );
 }
 
-export default function CementAdditiveComposition({ fetcher = dash.cementAdditiveComposition }) {
+export default function CementAdditiveComposition({ fetcher = dash.cementAdditiveComposition, queryKey = 'cement-additive-composition' }) {
   return (
     <DataPage
-      queryKey="cement-additive-composition"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Цемент қўшимчалари таркиби"
       subtitle="Cement Additive Composition — цемент таркибидаги қўшимчалар улуши"

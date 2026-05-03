@@ -41,10 +41,10 @@ function Chart({ rows }) {
   );
 }
 
-export default function DefectDetails({ fetcher = dash.defectDetails }) {
+export default function DefectDetails({ fetcher = dash.defectDetails, queryKey = 'defect-details' }) {
   return (
     <DataPage
-      queryKey="defect-details"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Нуқсон тафсилоти"
       subtitle="Defect Details — сифат назорати ва нуқсонлар таҳлили"

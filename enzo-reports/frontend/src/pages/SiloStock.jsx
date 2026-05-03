@@ -5,9 +5,9 @@ import styles from './SiloStock.module.css';
 
 const SILO_COLORS = ['#1B3A8C','#059669','#D97706','#7C3AED','#DC2626','#0891B2','#0D9488'];
 
-export default function SiloStock({ fetcher = dash.siloStock }) {
+export default function SiloStock({ fetcher = dash.siloStock, queryKey = 'silo-stock' }) {
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['silo-stock'],
+    queryKey: [queryKey],
     queryFn: fetcher,
     staleTime: 60000,
   });

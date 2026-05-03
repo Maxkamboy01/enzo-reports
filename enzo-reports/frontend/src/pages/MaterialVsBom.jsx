@@ -56,10 +56,10 @@ function Chart({ rows }) {
   );
 }
 
-export default function MaterialVsBom({ fetcher = dash.materialVsBom }) {
+export default function MaterialVsBom({ fetcher = dash.materialVsBom, queryKey = 'material-vs-bom' }) {
   return (
     <DataPage
-      queryKey="material-vs-bom"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Материал vs BOM"
       subtitle="Реал сарф BOM норматив билан солиштириш"

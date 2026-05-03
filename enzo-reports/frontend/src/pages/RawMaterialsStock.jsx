@@ -4,9 +4,9 @@ import { dash, fmt, fmtFull } from '../services/api';
 import { RefreshCw, Download, Package, Search, X } from 'lucide-react';
 import styles from './StockPage.module.css';
 
-export default function RawMaterialsStock({ fetcher = dash.rawMaterialsStock }) {
+export default function RawMaterialsStock({ fetcher = dash.rawMaterialsStock, queryKey = 'raw-materials-stock' }) {
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['raw-materials-stock'],
+    queryKey: [queryKey],
     queryFn: fetcher,
     staleTime: 60000,
   });

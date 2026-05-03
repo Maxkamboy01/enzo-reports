@@ -19,10 +19,10 @@ const COLS = [
   }},
 ];
 
-export default function RawMaterialMovement({ fetcher = dash.rawMaterialMovement }) {
+export default function RawMaterialMovement({ fetcher = dash.rawMaterialMovement, queryKey = 'raw-material-movement' }) {
   return (
     <DataPage
-      queryKey="raw-material-movement"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Хом ашё ҳаракати"
       subtitle="Кириш ва чиқиш ёзувлари"

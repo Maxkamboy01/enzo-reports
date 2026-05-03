@@ -88,10 +88,10 @@ function Chart({ rows }) {
   );
 }
 
-export default function CostStructure({ fetcher = dash.costStructure }) {
+export default function CostStructure({ fetcher = dash.costStructure, queryKey = 'cost-structure' }) {
   return (
     <DataPage
-      queryKey="cost-structure"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Харажат структураси"
       subtitle="Cost Structure — ишлаб чиқариш харажатлари тузилмаси"

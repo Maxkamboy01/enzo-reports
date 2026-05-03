@@ -59,10 +59,10 @@ function Chart({ rows }) {
   );
 }
 
-export default function CostTrendMonthly({ fetcher = dash.costTrendMonthly }) {
+export default function CostTrendMonthly({ fetcher = dash.costTrendMonthly, queryKey = 'cost-trend-monthly' }) {
   return (
     <DataPage
-      queryKey="cost-trend-monthly"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Ойлик харажат тренди"
       subtitle="Cost Trend Monthly — ойлар кесимида харажат динамикаси"

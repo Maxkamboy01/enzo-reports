@@ -59,10 +59,10 @@ function Chart({ rows }) {
   );
 }
 
-export default function ClinkerFactor({ fetcher = dash.clinkerFactor }) {
+export default function ClinkerFactor({ fetcher = dash.clinkerFactor, queryKey = 'clinker-factor' }) {
   return (
     <DataPage
-      queryKey="clinker-factor"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Клинкер омил"
       subtitle="Clinker Factor — цемент таркибидаги клинкер улуши"

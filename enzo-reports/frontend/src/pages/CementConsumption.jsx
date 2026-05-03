@@ -9,10 +9,10 @@ const COLS = [
   { key: 'warehouse', label: 'Склад' },
 ];
 
-export default function CementConsumption({ fetcher = dash.cementConsumption }) {
+export default function CementConsumption({ fetcher = dash.cementConsumption, queryKey = 'cement-consumption' }) {
   return (
     <DataPage
-      queryKey="cement-consumption"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Цемент сарфи"
       subtitle="Тайёр цемент сарфи хисоботи"

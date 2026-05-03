@@ -54,10 +54,10 @@ function Chart({ rows }) {
   );
 }
 
-export default function CostSummary({ fetcher = dash.costSummary }) {
+export default function CostSummary({ fetcher = dash.costSummary, queryKey = 'cost-summary' }) {
   return (
     <DataPage
-      queryKey="cost-summary"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Харажат хулосаси"
       subtitle="Cost Summary — жами харажатлар якуний кўриниши"

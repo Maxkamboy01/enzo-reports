@@ -53,10 +53,10 @@ function Chart({ rows }) {
   );
 }
 
-export default function VolumeDaily({ fetcher = dash.volumeDaily }) {
+export default function VolumeDaily({ fetcher = dash.volumeDaily, queryKey = 'volume-daily' }) {
   return (
     <DataPage
-      queryKey="volume-daily"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Кунлик ишлаб чиқариш ҳажми"
       subtitle="Volume Daily — ишлаб чиқариш бўйича кунлик маълумот"

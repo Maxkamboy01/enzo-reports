@@ -30,11 +30,13 @@ const p = ({ dateFrom, dateTo, itemCode, whsCode, pageSize, skip } = {}) => ({
   ...(skip     != null ? { skip }     : {}),
 });
 
+const toArr = v => Array.isArray(v) ? v : [];
+
 const list = url => params =>
-  apiShifer.get(url, { params: p(params) }).then(r => r.data?.data ?? r.data ?? []);
+  apiShifer.get(url, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data));
 
 const noParams = url => () =>
-  apiShifer.get(url).then(r => r.data?.data ?? r.data ?? []);
+  apiShifer.get(url).then(r => toArr(r.data?.data ?? r.data));
 
 export const dashShifer = {
   // Shifer-specific

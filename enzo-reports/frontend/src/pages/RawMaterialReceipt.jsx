@@ -21,10 +21,10 @@ const BARS = [
   { key: 'zala', label: 'Зала', color: '#0891B2' },
 ];
 
-export default function RawMaterialReceipt({ fetcher = dash.rawMaterialReceipt }) {
+export default function RawMaterialReceipt({ fetcher = dash.rawMaterialReceipt, queryKey = 'raw-material-receipt' }) {
   return (
     <DataPage
-      queryKey="raw-material-receipt"
+      queryKey={queryKey}
       fetcher={fetcher}
       title="Хом ашё кириши"
       subtitle="Кунлик кириш хисоботи"
