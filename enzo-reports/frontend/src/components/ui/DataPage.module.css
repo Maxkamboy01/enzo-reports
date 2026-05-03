@@ -122,17 +122,15 @@ select.input { cursor: pointer; }
   font-size: 0.72rem;
   color: var(--grey-500);
   font-weight: 500;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .pageInfo { color: var(--grey-600); font-weight: 600; }
 
-/* Pagination */
+/* Pagination (inline in tableInfo) */
 .pagination {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-top: 1px solid var(--grey-200);
-  background: var(--grey-50);
   gap: 8px;
 }
 

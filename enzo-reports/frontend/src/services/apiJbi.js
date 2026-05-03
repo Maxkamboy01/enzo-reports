@@ -21,9 +21,10 @@ apiJbi.interceptors.response.use(
 
 export default apiJbi;
 
+// JBI Swagger uses StartDate/EndDate (capital S/E)
 const p = ({ dateFrom, dateTo, itemCode, whsCode, pageSize, skip } = {}) => ({
-  startDate: dateFrom,
-  endDate:   dateTo,
+  StartDate: dateFrom,
+  EndDate:   dateTo,
   ...(itemCode  ? { itemCode }  : {}),
   ...(whsCode   ? { whsCode }   : {}),
   ...(pageSize != null ? { pageSize } : {}),
@@ -31,27 +32,16 @@ const p = ({ dateFrom, dateTo, itemCode, whsCode, pageSize, skip } = {}) => ({
 });
 
 const toArr = v => Array.isArray(v) ? v : [];
-const list  = url => params => apiJbi.get(url, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data));
-
-// JBI backend requires startDate/endDate for ALL endpoints — even stock snapshots.
-// This helper injects current-month dates when the component passes no params.
-const listOrToday = url => (params) => {
-  const today = new Date().toISOString().slice(0, 10);
-  const firstOfMonth = today.slice(0, 7) + '-01';
-  const resolved = {
-    startDate: (params && params.dateFrom) ? params.dateFrom : firstOfMonth,
-    endDate:   (params && params.dateTo)   ? params.dateTo   : today,
-  };
-  return apiJbi.get(url, { params: resolved }).then(r => toArr(r.data?.data ?? r.data));
-};
+const list     = url => params => apiJbi.get(url, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data));
+const noParams = url => ()     => apiJbi.get(url).then(r => toArr(r.data?.data ?? r.data));
 
 export const dashJbi = {
   // Production
   millProduction:            list('/api-jbi/api/dashboard/mill-production'),
   volumeDaily:               list('/api-jbi/api/dashboard/volume-daily'),
 
-  // Raw materials
-  rawMaterialsStock:         listOrToday('/api-jbi/api/dashboard/raw-materials-stock'),
+  // Raw materials — stock has NO date params per Swagger
+  rawMaterialsStock:         noParams('/api-jbi/api/dashboard/raw-materials-stock'),
   rawMaterialReceipt:        list('/api-jbi/api/dashboard/raw-material-receipt'),
   rawMaterialConsumption:    list('/api-jbi/api/dashboard/raw-material-consumption'),
   rawMaterialMovement:       list('/api-jbi/api/dashboard/raw-material-movement'),

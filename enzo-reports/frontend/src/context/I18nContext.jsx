@@ -7,7 +7,8 @@ const LANGS = {
     'nav.inventory':'Омбор','nav.shifer_overview':'Шифер · Умумий',
     'nav.shifer_production':'Шифер · Ишлаб чиқариш','nav.shifer_rawmat':'Шифер · Хом ашё',
     'nav.jbi_production':'ЖБИ · Ишлаб чиқариш','nav.jbi_rawmat':'ЖБИ · Хом ашё',
-    'nav.jbi_silo':'ЖБИ · Силос & Цемент','nav.jbi_quality':'ЖБИ · Сифат',
+    'nav.jbi_silo':'ЖБИ · Силос & Цемент','nav.jbi_cement':'ЖБИ · Цемент',
+    'nav.jbi_quality':'ЖБИ · Сифат',
     'nav.jbi_cost':'ЖБИ · Харажатлар','nav.jbi_inventory':'ЖБИ · Омбор',
 
     'item.dashboard':'Асосий панель','item.mill_production':'Тегирмон ишлаб чиқариши',
@@ -49,7 +50,8 @@ const LANGS = {
     'nav.inventory':'Склад','nav.shifer_overview':'Шифер · Общее',
     'nav.shifer_production':'Шифер · Производство','nav.shifer_rawmat':'Шифер · Сырьё',
     'nav.jbi_production':'ЖБИ · Производство','nav.jbi_rawmat':'ЖБИ · Сырьё',
-    'nav.jbi_silo':'ЖБИ · Силос и Цемент','nav.jbi_quality':'ЖБИ · Качество',
+    'nav.jbi_silo':'ЖБИ · Силос и Цемент','nav.jbi_cement':'ЖБИ · Цемент',
+    'nav.jbi_quality':'ЖБИ · Качество',
     'nav.jbi_cost':'ЖБИ · Затраты','nav.jbi_inventory':'ЖБИ · Склад',
 
     'item.dashboard':'Главная','item.mill_production':'Производство мельницы',
@@ -91,7 +93,8 @@ const LANGS = {
     'nav.inventory':'Inventory','nav.shifer_overview':'Shifer · Overview',
     'nav.shifer_production':'Shifer · Production','nav.shifer_rawmat':'Shifer · Raw Materials',
     'nav.jbi_production':'JBI · Production','nav.jbi_rawmat':'JBI · Raw Materials',
-    'nav.jbi_silo':'JBI · Silo & Cement','nav.jbi_quality':'JBI · Quality',
+    'nav.jbi_silo':'JBI · Silo & Cement','nav.jbi_cement':'JBI · Cement',
+    'nav.jbi_quality':'JBI · Quality',
     'nav.jbi_cost':'JBI · Costs','nav.jbi_inventory':'JBI · Inventory',
 
     'item.dashboard':'Dashboard','item.mill_production':'Mill Production',

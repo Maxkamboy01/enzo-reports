@@ -103,7 +103,7 @@ export const SECTIONS = [
       { path: '/jbi/material-overconsumption', label: 'item.material_overconsumption', icon: AlertTriangle },
     ],
   },
-  { id: 'jbi-cement', label: 'nav.jbi_silo', color: '#0891B2', db: 'jbi',
+  { id: 'jbi-cement', label: 'nav.jbi_cement', color: '#0891B2', db: 'jbi',
     items: [
       { path: '/jbi/cement-consumption',          label: 'item.cement_consumption', icon: Cog },
       { path: '/jbi/cement-additive-composition', label: 'item.cement_additive',   icon: FlaskConical },

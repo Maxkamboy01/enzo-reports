@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { RefreshCw, Download, Filter } from 'lucide-react';
+import { RefreshCw, Download, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import styles from './DataPage.module.css';
+
+const PAGE_SIZE = 20;
 
 export default function DataPage({
   queryKey, fetcher, title, subtitle,
@@ -16,6 +18,7 @@ export default function DataPage({
   const firstOfMonth = today.slice(0, 7) + '-01';
   const [params, setParams] = useState({ dateFrom: firstOfMonth, dateTo: today, ...defaultParams });
   const [applied, setApplied] = useState({ dateFrom: firstOfMonth, dateTo: today, ...defaultParams, pageSize: 500 });
+  const [page, setPage] = useState(0);
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: [queryKey, applied],
@@ -41,7 +44,11 @@ export default function DataPage({
 
   const handleApply = () => {
     setApplied({ ...params, pageSize: 500 });
+    setPage(0);
   };
+
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+  const pageRows = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
     <div className={styles.page}>
@@ -92,6 +99,17 @@ export default function DataPage({
       <div className={styles.tableCard}>
         <div className={styles.tableInfo}>
           <span>{rows.length} {t('ui.records')}</span>
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button className={styles.pageBtn} onClick={() => setPage(p => p - 1)} disabled={page === 0}>
+                <ChevronLeft size={13} />{t('ui.prev')}
+              </button>
+              <span className={styles.pageInfo}>{t('ui.page')} {page + 1} / {totalPages}</span>
+              <button className={styles.pageBtn} onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}>
+                {t('ui.next')}<ChevronRight size={13} />
+              </button>
+            </div>
+          )}
         </div>
 
         {isLoading ? (
@@ -112,9 +130,9 @@ export default function DataPage({
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, i) => (
+                {pageRows.map((row, i) => (
                   <tr key={i} className={styles.tr}>
-                    <td className={styles.numTd}>{i + 1}</td>
+                    <td className={styles.numTd}>{page * PAGE_SIZE + i + 1}</td>
                     {columns.map(c => (
                       <td key={c.key} className={c.right ? styles.tdR : styles.td}>
                         {c.render ? c.render(row[c.key], row) : (row[c.key] ?? '—')}
