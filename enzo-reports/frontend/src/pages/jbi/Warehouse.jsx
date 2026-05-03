@@ -1,4 +1,5 @@
-import ReportPage from '../../components/ui/ReportPage';
+import DataPage from '../../components/ui/DataPage';
+import { dashJbi } from '../../services/apiJbi';
 
 const COLUMNS = [
   { key: 'itemCode', label: 'Код' },
@@ -13,5 +14,13 @@ const COLUMNS = [
 ];
 
 export default function JbiWarehouse() {
-  return <ReportPage db="jbi" reportKey="warehouse" title="Склад қолдиқлари — ЖБИ" columns={COLUMNS} />;
+  return (
+    <DataPage
+      queryKey="jbi-warehouse"
+      fetcher={dashJbi.warehouseStock}
+      title="Склад қолдиқлари — ЖБИ"
+      columns={COLUMNS}
+      renderFilters={false}
+    />
+  );
 }

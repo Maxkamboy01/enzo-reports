@@ -1,4 +1,5 @@
-import ReportPage from '../../components/ui/ReportPage';
+import DataPage from '../../components/ui/DataPage';
+import { dashJbi } from '../../services/apiJbi';
 
 const COLUMNS = [
   { key: 'date', label: 'Сана' },
@@ -13,6 +14,11 @@ const COLUMNS = [
 
 export default function JbiGonchilar() {
   return (
-    <ReportPage db="jbi" reportKey="gonchilar" title="Гончилар участкаси — Цемент хом ашёси сарфи" columns={COLUMNS} />
+    <DataPage
+      queryKey="jbi-gonchilar"
+      fetcher={dashJbi.materialConsumptionShift}
+      title="Гончилар участкаси — Цемент хом ашёси сарфи"
+      columns={COLUMNS}
+    />
   );
 }

@@ -40,7 +40,6 @@ export default function DataPage({
   };
 
   const handleApply = () => {
-    setPage(0);
     setApplied({ ...params, pageSize: 500 });
   };
 

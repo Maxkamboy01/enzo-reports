@@ -63,4 +63,67 @@ export const dashJbi = {
 
   // Inventory
   inventoryTransfer:         list('/api-jbi/api/dashboard/inventory-transfer-request'),
+
+  // Financial — direct SAP B1 OData via proxy
+  sales: params => apiJbi.get('/api-jbi/api/Invoices', {
+    params: {
+      $expand: 'DocumentLines',
+      $filter: `DocDate ge '${params.dateFrom}' and DocDate le '${params.dateTo}'`,
+      $top: params.pageSize || 500,
+    },
+  }).then(r => {
+    const rows = r.data?.value ?? r.data?.data ?? r.data ?? [];
+    return rows.flatMap(inv => (inv.DocumentLines || []).map(l => ({
+      docDate: inv.DocDate, docNum: inv.DocNum, customer: inv.CardName,
+      agent: inv.SalesPersonCode, itemName: l.ItemDescription || l.ItemCode,
+      quantity: l.Quantity, uom: l.UoMCode, price: l.Price, total: l.LineTotal,
+      currency: inv.DocCurrency,
+    })));
+  }),
+
+  ar: params => apiJbi.get('/api-jbi/api/Invoices', {
+    params: {
+      $select: 'DocNum,DocDate,DocDueDate,CardName,DocTotal,PaidToDate',
+      $filter: `DocDate ge '${params.dateFrom}' and DocDate le '${params.dateTo}' and DocumentStatus eq 'bost_Open'`,
+      $top: params.pageSize || 500,
+    },
+  }).then(r => {
+    const rows = r.data?.value ?? r.data?.data ?? r.data ?? [];
+    return rows.map(row => ({
+      customer: row.CardName, docNum: row.DocNum, docDate: row.DocDate, dueDate: row.DocDueDate,
+      total: row.DocTotal, paid: row.PaidToDate,
+      balance: ((row.DocTotal || 0) - (row.PaidToDate || 0)).toFixed(2),
+      overdueDays: Math.max(0, Math.floor((Date.now() - new Date(row.DocDueDate)) / 86400000)) || null,
+    }));
+  }),
+
+  ap: params => apiJbi.get('/api-jbi/api/PurchaseInvoices', {
+    params: {
+      $select: 'DocNum,DocDate,DocDueDate,CardName,DocTotal,PaidToDate',
+      $filter: `DocDate ge '${params.dateFrom}' and DocDate le '${params.dateTo}' and DocumentStatus eq 'bost_Open'`,
+      $top: params.pageSize || 500,
+    },
+  }).then(r => {
+    const rows = r.data?.value ?? r.data?.data ?? r.data ?? [];
+    return rows.map(row => ({
+      supplier: row.CardName, docNum: row.DocNum, docDate: row.DocDate, dueDate: row.DocDueDate,
+      total: row.DocTotal, paid: row.PaidToDate,
+      balance: ((row.DocTotal || 0) - (row.PaidToDate || 0)).toFixed(2),
+      overdueDays: Math.max(0, Math.floor((Date.now() - new Date(row.DocDueDate)) / 86400000)) || null,
+    }));
+  }),
+
+  warehouseStock: () => apiJbi.get('/api-jbi/api/ItemWarehouseInfoCollection', {
+    params: {
+      $select: 'ItemCode,ItemName,WarehouseCode,OnHand,Committed,Available,UoMCode',
+      $top: 1000,
+    },
+  }).then(r => {
+    const rows = r.data?.value ?? r.data?.data ?? r.data ?? [];
+    return rows.map(row => ({
+      itemCode: row.ItemCode, itemName: row.ItemName, warehouse: row.WarehouseCode,
+      onHand: row.OnHand, committed: row.Committed, available: row.Available,
+      uom: row.UoMCode || '—', avgCost: row.AvgPrice ?? '—', totalValue: '—',
+    }));
+  }),
 };

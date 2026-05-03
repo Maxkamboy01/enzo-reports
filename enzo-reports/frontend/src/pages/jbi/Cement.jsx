@@ -1,4 +1,5 @@
-import ReportPage from '../../components/ui/ReportPage';
+import DataPage from '../../components/ui/DataPage';
+import { dashJbi } from '../../services/apiJbi';
 
 const COLUMNS = [
   { key: 'date', label: 'Сана' },
@@ -16,6 +17,11 @@ const COLUMNS = [
 
 export default function JbiCement() {
   return (
-    <ReportPage db="jbi" reportKey="cement" title="Темир-бетон цемент сарфи — БСУ бункерлари" columns={COLUMNS} />
+    <DataPage
+      queryKey="jbi-cement"
+      fetcher={dashJbi.cementConsumption}
+      title="Темир-бетон цемент сарфи — БСУ бункерлари"
+      columns={COLUMNS}
+    />
   );
 }

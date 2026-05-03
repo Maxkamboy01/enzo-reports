@@ -1,4 +1,5 @@
-import ReportPage from '../../components/ui/ReportPage';
+import DataPage from '../../components/ui/DataPage';
+import { dashJbi } from '../../services/apiJbi';
 
 const COLUMNS = [
   { key: 'date', label: 'Сана' },
@@ -17,6 +18,11 @@ const COLUMNS = [
 
 export default function JbiLab() {
   return (
-    <ReportPage db="jbi" reportKey="lab" title="ЖБ — Лаборатория хисоботи" columns={COLUMNS} />
+    <DataPage
+      queryKey="jbi-lab"
+      fetcher={dashJbi.defectDetails}
+      title="ЖБ — Лаборатория хисоботи"
+      columns={COLUMNS}
+    />
   );
 }
