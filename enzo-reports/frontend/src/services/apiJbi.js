@@ -21,10 +21,13 @@ apiJbi.interceptors.response.use(
 
 export default apiJbi;
 
-// JBI Swagger uses StartDate/EndDate (capital S/E)
+// JBI date format: DDMMYYYY (e.g. 2026-05-03 → 03052026)
+const jbiDate = iso => iso ? iso.replace(/(\d{4})-(\d{2})-(\d{2})/, '$3$2$1') : undefined;
+
+// JBI Swagger uses StartDate/EndDate (capital S/E) in DDMMYYYY format
 const p = ({ dateFrom, dateTo, itemCode, whsCode, pageSize, skip } = {}) => ({
-  StartDate: dateFrom,
-  EndDate:   dateTo,
+  StartDate: jbiDate(dateFrom),
+  EndDate:   jbiDate(dateTo),
   ...(itemCode  ? { itemCode }  : {}),
   ...(whsCode   ? { whsCode }   : {}),
   ...(pageSize != null ? { pageSize } : {}),
