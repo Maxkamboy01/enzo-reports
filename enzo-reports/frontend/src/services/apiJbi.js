@@ -30,16 +30,33 @@ const p = ({ dateFrom, dateTo, itemCode, whsCode, pageSize, skip } = {}) => ({
   ...(skip     != null ? { skip }     : {}),
 });
 
-const list    = url => params => apiJbi.get(url, { params: p(params) }).then(r => r.data?.data ?? r.data ?? []);
-const noParams = url => ()     => apiJbi.get(url).then(r => r.data?.data ?? r.data ?? []);
+const toArr = v => Array.isArray(v) ? v : [];
+const list     = url => params => apiJbi.get(url, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data));
+const noParams = url => ()     => apiJbi.get(url).then(r => toArr(r.data?.data ?? r.data));
 
 export const dashJbi = {
   // Production
   millProduction:            list('/api-jbi/api/dashboard/mill-production'),
   volumeDaily:               list('/api-jbi/api/dashboard/volume-daily'),
 
-  // Raw materials
-  rawMaterialsStock:         noParams('/api-jbi/api/dashboard/raw-materials-stock'),
+  // Raw materials — SAP B1 OData aggregated per item
+  rawMaterialsStock: () => apiJbi.get('/api-jbi/api/ItemWarehouseInfoCollection', {
+    params: { $select: 'ItemCode,ItemName,WarehouseCode,OnHand', $top: 2000 },
+  }).then(r => {
+    const rows = toArr(r.data?.value ?? r.data?.data ?? r.data);
+    const map = {};
+    rows.forEach(row => {
+      const key = row.ItemCode;
+      if (!map[key]) map[key] = { itemCode: row.ItemCode, itemName: row.ItemName, whsCode: 0, siloslar: 0, tegirmon: 0, total: 0 };
+      const whs = (row.WarehouseCode || '').toLowerCase();
+      const qty = parseFloat(row.OnHand) || 0;
+      if (whs.includes('silo') || whs.includes('силос'))      map[key].siloslar += qty;
+      else if (whs.includes('mill') || whs.includes('тегир')) map[key].tegirmon += qty;
+      else                                                      map[key].whsCode  += qty;
+      map[key].total += qty;
+    });
+    return Object.values(map).filter(r => r.total > 0).sort((a, b) => b.total - a.total);
+  }),
   rawMaterialReceipt:        list('/api-jbi/api/dashboard/raw-material-receipt'),
   rawMaterialConsumption:    list('/api-jbi/api/dashboard/raw-material-consumption'),
   rawMaterialMovement:       list('/api-jbi/api/dashboard/raw-material-movement'),
