@@ -61,8 +61,23 @@ export const dashJbi = {
   costSummary:               list('/api-jbi/api/dashboard/cost-summy'),
   costTrendMonthly:          list('/api-jbi/api/dashboard/cost-trend-monthly'),
 
-  // Inventory
-  inventoryTransfer:         list('/api-jbi/api/dashboard/inventory-transfer-request'),
+  // Inventory — SAP B1 OData (dashboard endpoint doesn't exist on JBI backend)
+  inventoryTransfer: params => apiJbi.get('/api-jbi/api/InventoryTransferRequests', {
+    params: {
+      $expand: 'StockTransferLines',
+      $filter: `DocDate ge '${params.dateFrom}' and DocDate le '${params.dateTo}'`,
+      $top: params.pageSize || 500,
+      $orderby: 'DocDate desc',
+    },
+  }).then(r => {
+    const rows = r.data?.value ?? r.data?.data ?? r.data ?? [];
+    return rows.flatMap(doc => (doc.StockTransferLines || []).map(l => ({
+      docDate: doc.DocDate, docNum: doc.DocNum,
+      itemCode: l.ItemCode, itemName: l.ItemDescription || l.ItemCode,
+      fromWhsCod: l.FromWarehouseCode, whsCode: l.WarehouseCode,
+      quantity: l.Quantity,
+    })));
+  }),
 
   // Financial — direct SAP B1 OData via proxy
   sales: params => apiJbi.get('/api-jbi/api/Invoices', {

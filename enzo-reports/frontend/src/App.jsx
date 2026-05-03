@@ -174,11 +174,9 @@ export default function App() {
               <Route path="/jbi/raw-material-consumption"   element={<DBRoute db="jbi"><RawMaterialConsumption  fetcher={dashJbi.rawMaterialConsumption} /></DBRoute>} />
               <Route path="/jbi/raw-material-movement"      element={<DBRoute db="jbi"><RawMaterialMovement     fetcher={dashJbi.rawMaterialMovement} /></DBRoute>} />
               <Route path="/jbi/raw-material-pivot"         element={<DBRoute db="jbi"><RawMaterialPivot        fetcher={dashJbi.rawMaterialPivot} /></DBRoute>} />
-              <Route path="/jbi/material-vs-bom"            element={<DBRoute db="jbi"><MaterialVsBom           fetcher={dashJbi.materialVsBom} /></DBRoute>} />
-              <Route path="/jbi/material-overconsumption"   element={<DBRoute db="jbi"><MaterialOverconsumption fetcher={dashJbi.materialOverconsumption} /></DBRoute>} />
-              <Route path="/jbi/material-consumption-shift" element={<DBRoute db="jbi"><MaterialConsumptionShift fetcher={dashJbi.materialConsumptionShift} /></DBRoute>} />
+              <Route path="/jbi/material-vs-bom"          element={<DBRoute db="jbi"><MaterialVsBom           fetcher={dashJbi.materialVsBom} /></DBRoute>} />
+              <Route path="/jbi/material-overconsumption" element={<DBRoute db="jbi"><MaterialOverconsumption fetcher={dashJbi.materialOverconsumption} /></DBRoute>} />
 
-              <Route path="/jbi/silo-stock"                   element={<DBRoute db="jbi"><SiloStock                 fetcher={dashJbi.siloStock} /></DBRoute>} />
               <Route path="/jbi/cement-consumption"           element={<DBRoute db="jbi"><CementConsumption         fetcher={dashJbi.cementConsumption} /></DBRoute>} />
               <Route path="/jbi/cement-additive-composition"  element={<DBRoute db="jbi"><CementAdditiveComposition fetcher={dashJbi.cementAdditiveComposition} /></DBRoute>} />
 
