@@ -12,72 +12,81 @@ const MODULES = [
     id: 'production',
     icons: Factory,
     color: '#1B3A8C',
-    titles: { uz: 'Ishlab chiqarish', ru: 'Производство', en: 'Production' },
-    descs: { uz: 'Tegirmon, xom-ashyo, sement hisobotlari', ru: 'Мельница, сырьё, цемент', en: 'Mill, raw materials, cement' },
+    titles:    { uz: 'Ishlab chiqarish', ru: 'Производство', en: 'Production' },
+    descs:     { uz: 'Tegirmon, xom-ashyo va sement', ru: 'Мельница, сырьё, цемент', en: 'Mill, raw materials, cement' },
+    subLabels: { uz: 'Ishlab chiqarish hisobotlari', ru: 'Отчёты производства', en: 'Production reports' },
     isProduction: true,
   },
   {
     id: 'sales',
     icons: TrendingUp,
     color: '#059669',
-    titles: { uz: 'Sotuvlar', ru: 'Продажи', en: 'Sales' },
-    descs: { uz: "Menejerlar bo'yicha savdo hisoboti", ru: 'Отчёт менеджеров по продажам', en: 'Sales report by managers' },
+    titles:    { uz: 'Sotuvlar', ru: 'Продажи', en: 'Sales' },
+    descs:     { uz: "Menejerlar bo'yicha savdo hisoboti", ru: 'Отчёт менеджеров по продажам', en: 'Sales report by managers' },
+    subLabels: { uz: 'Sotuvlar hisoboti', ru: 'Заказов на продажу', en: 'Sales orders' },
     route: '/sales',
   },
   {
     id: 'warehouse',
     icons: Package,
     color: '#D97706',
-    titles: { uz: 'Ombor', ru: 'Склад', en: 'Warehouse' },
-    descs: { uz: "Ombordagi tovarlar qoldig'i", ru: 'Остатки товаров на складе', en: 'Stock on hand' },
+    titles:    { uz: 'Ombor', ru: 'Склад', en: 'Warehouse' },
+    descs:     { uz: "Tovarlar qoldig'ini boshqarish", ru: 'Управление запасами и складом', en: 'Inventory & stock management' },
+    subLabels: { uz: "Ombordagi tovarlar", ru: 'Товаров на складе', en: 'Items in stock' },
     route: '/warehouse',
   },
   {
     id: 'accounts',
     icons: Landmark,
     color: '#0891B2',
-    titles: { uz: 'Hisob-raqamlar', ru: 'Счета', en: 'Accounts' },
-    descs: { uz: 'Kassa va bank hisobvaraqlari', ru: 'Кассы и расчётные счета', en: 'Cash & bank accounts' },
+    titles:    { uz: 'Hisob-raqamlar', ru: 'Счета', en: 'Accounts' },
+    descs:     { uz: 'Kassa va bank hisobvaraqlari', ru: 'Кассы и расчётные счета', en: 'Cash & bank accounts' },
+    subLabels: { uz: "Umumiy balans", ru: 'Общий баланс', en: 'Total balance' },
     route: '/accounts',
   },
   {
     id: 'debtors',
     icons: UserMinus,
     color: '#DC2626',
-    titles: { uz: 'Debitorlar', ru: 'Дебиторы', en: 'Debtors' },
-    descs: { uz: "Xaridorlar qarzdorligi", ru: 'Задолженность покупателей', en: 'Customer receivables' },
+    titles:    { uz: 'Debitorlar', ru: 'Дебиторы', en: 'Debtors' },
+    descs:     { uz: "Xaridorlar qarzdorligi", ru: 'Задолженность покупателей', en: 'Customer receivables' },
+    subLabels: { uz: "Jami debitorlik", ru: 'Общая задолженность', en: 'Total receivables' },
     route: '/debtors',
   },
   {
     id: 'creditors',
     icons: UserPlus,
     color: '#7C3AED',
-    titles: { uz: 'Kreditorlar', ru: 'Кредиторы', en: 'Creditors' },
-    descs: { uz: "Ta'minotchilar qarzdorligi", ru: 'Задолженность поставщикам', en: 'Supplier payables' },
+    titles:    { uz: 'Kreditorlar', ru: 'Кредиторы', en: 'Creditors' },
+    descs:     { uz: "Ta'minotchilar qarzdorligi", ru: 'Задолженность поставщикам', en: 'Supplier payables' },
+    subLabels: { uz: "Jami kreditorlik", ru: 'Общая задолженность', en: 'Total payables' },
     route: '/creditors',
   },
   {
     id: 'expenses',
     icons: Receipt,
     color: '#64748B',
-    titles: { uz: 'Xarajatlar', ru: 'Расходы', en: 'Expenses' },
-    descs: { uz: "94xx hisoblar bo'yicha xarajatlar", ru: 'Транзакции по счетам 94xx', en: 'Expenses (accounts 94xx)' },
+    titles:    { uz: 'Xarajatlar', ru: 'Расходы', en: 'Expenses' },
+    descs:     { uz: "94xx hisoblar bo'yicha xarajatlar", ru: 'Транзакции по счетам 94xx', en: 'Expenses (accounts 94xx)' },
+    subLabels: { uz: "Oylik xarajatlar", ru: 'Месячные расходы', en: 'Monthly expenses' },
     route: '/expenses',
   },
   {
     id: 'cashflow',
     icons: ArrowLeftRight,
     color: '#0D9488',
-    titles: { uz: 'Pul oqimlari', ru: 'Ден. потоки', en: 'Cash Flow' },
-    descs: { uz: "Kirim va chiqim to'lovlar", ru: 'Входящие и исходящие платежи', en: 'Incoming & outgoing payments' },
+    titles:    { uz: 'Pul oqimlari', ru: 'Ден. потоки', en: 'Cash Flow' },
+    descs:     { uz: "Kirim va chiqim to'lovlar", ru: 'Входящие и исходящие платежи', en: 'Incoming & outgoing payments' },
+    subLabels: { uz: "To'lovlar harakati", ru: 'Движение платежей', en: 'Payment flow' },
     route: '/cashflow',
   },
   {
     id: 'pnl',
     icons: BarChart2,
     color: '#F59E0B',
-    titles: { uz: "P&L hisobot", ru: 'P&L отчёт', en: 'P&L Report' },
-    descs: { uz: 'Foyda va zarar hisoboti', ru: 'Доходы, расходы, результат', en: 'Profit & loss report' },
+    titles:    { uz: "P&L hisobot", ru: 'P&L отчёт', en: 'P&L Report' },
+    descs:     { uz: 'Foyda va zarar hisoboti', ru: 'Доходы, расходы, результат', en: 'Profit & loss report' },
+    subLabels: { uz: "Moliyaviy natija", ru: 'Финансовый результат', en: 'Financial result' },
     route: '/pnl',
   },
 ];
@@ -141,15 +150,16 @@ export default function ModulesHub() {
             const Icon = mod.icons;
             return (
               <button key={mod.id} className={styles.card} onClick={() => handleCard(mod)}>
-                <div className={styles.cardTop} style={{ background: mod.color }} />
                 <div className={styles.cardContent}>
-                  <div className={styles.iconWrap} style={{ background: mod.color + '18', color: mod.color }}>
-                    <Icon size={30} />
+                  <div className={styles.cardRow1}>
+                    <div className={styles.iconWrap} style={{ background: mod.color + '20', color: mod.color }}>
+                      <Icon size={22} />
+                    </div>
+                    <span className={styles.cardStat}>—</span>
                   </div>
-                  <div className={styles.cardText}>
-                    <div className={styles.cardTitle}>{mod.titles[l]}</div>
-                    <div className={styles.cardDesc}>{mod.descs[l]}</div>
-                  </div>
+                  <div className={styles.cardTitle}>{mod.titles[l]}</div>
+                  <div className={styles.cardDesc}>{mod.descs[l]}</div>
+                  <div className={styles.cardSubLabel}>{mod.subLabels[l]}</div>
                 </div>
               </button>
             );
