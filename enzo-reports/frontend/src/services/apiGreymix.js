@@ -61,4 +61,6 @@ export const dashGreymix = {
   pnlDetails:              p   => get(`${BASE}/pnl-details`, p).then(toArr),
   expensesList:            p   => get(`${BASE}/expenses-list`, p).then(toArr),
   expensesSummary:         p   => get(`${BASE}/expenses-summary`, p).then(toArr),
+  productCostStructure:    p   => get(`${BASE}/product-cost-structure`, p).then(toArr),
+  productCostSummary:      p   => get(`${BASE}/product-cost-summary`, p).then(d => toObj(d)),
 };

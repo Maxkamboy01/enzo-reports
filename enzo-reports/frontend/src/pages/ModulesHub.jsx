@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../context/I18nContext';
 import {
   Factory, TrendingUp, Package, Landmark, UserMinus, UserPlus,
-  Receipt, ArrowLeftRight, BarChart2, LogOut, ChevronRight, Settings,
+  Receipt, ArrowLeftRight, BarChart2, Layers, LogOut, ChevronRight, Settings,
 } from 'lucide-react';
 import styles from './ModulesHub.module.css';
 
@@ -88,6 +88,15 @@ const MODULES = [
     descs:     { uz: 'Foyda va zarar hisoboti', ru: 'Доходы, расходы, результат', en: 'Profit & loss report' },
     subLabels: { uz: "Moliyaviy natija", ru: 'Финансовый результат', en: 'Financial result' },
     route: '/pnl',
+  },
+  {
+    id: 'product-cost',
+    icons: Layers,
+    color: '#0D9488',
+    titles:    { uz: 'Mahsulot tannarxi', ru: 'Себестоимость', en: 'Product Cost' },
+    descs:     { uz: "Komponentlar bo'yicha xarajat tuzilmasi", ru: 'Структура себестоимости продукта', en: 'Product cost structure by component' },
+    subLabels: { uz: "Birlik narxi · %", ru: 'Себест. на ед. · %', en: 'Cost per unit · %' },
+    route: '/product-cost',
   },
 ];
 

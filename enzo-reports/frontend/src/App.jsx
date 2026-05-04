@@ -60,6 +60,7 @@ import CreditorsPage from './pages/greymix/CreditorsPage';
 import ExpensesPage from './pages/greymix/ExpensesPage';
 import CashFlowPage from './pages/greymix/CashFlowPage';
 import PnlPage from './pages/greymix/PnlPage';
+import ProductCostPage from './pages/greymix/ProductCostPage';
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 60000 } },
@@ -115,7 +116,8 @@ export default function App() {
               <Route path="/creditors" element={<CreditorsPage />} />
               <Route path="/expenses"  element={<ExpensesPage />} />
               <Route path="/cashflow"  element={<CashFlowPage />} />
-              <Route path="/pnl"       element={<PnlPage />} />
+              <Route path="/pnl"          element={<PnlPage />} />
+              <Route path="/product-cost" element={<ProductCostPage />} />
             </Route>
 
             {/* Production modules — existing sidebar layout */}
