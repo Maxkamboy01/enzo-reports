@@ -35,7 +35,8 @@ export default function SalesPage() {
     staleTime: 60000,
   });
 
-  const managers = useMemo(() => {
+  // Raw rows from API — may be per-day-per-manager (not aggregated)
+  const rawRows = useMemo(() => {
     if (!raw) return [];
     if (Array.isArray(raw)) return raw;
     const d = raw.data ?? raw;
@@ -43,14 +44,40 @@ export default function SalesPage() {
     return Array.isArray(d.managers) ? d.managers : Array.isArray(d.managerData) ? d.managerData : [];
   }, [raw]);
 
+  // Aggregate by manager name
+  const managers = useMemo(() => {
+    const map = {};
+    for (const r of rawRows) {
+      const name = r.manager ?? r.managerName ?? r.slpName ?? '—';
+      if (!map[name]) map[name] = { manager: name, totalUZS: 0, invoiceCount: 0 };
+      map[name].totalUZS    += Number(r.totalUZS) || 0;
+      map[name].invoiceCount += Number(r.invoiceCount ?? r.count) || 0;
+    }
+    return Object.values(map).sort((a, b) => b.totalUZS - a.totalUZS);
+  }, [rawRows]);
+
+  // Aggregate by date for line chart
   const chartData = useMemo(() => {
-    if (!raw) return [];
-    const d = raw.data ?? raw;
-    return Array.isArray(d.chartData) ? d.chartData : Array.isArray(d.chart) ? d.chart : Array.isArray(d.dailyData) ? d.dailyData : [];
-  }, [raw]);
+    // If API returned pre-built chart data, prefer it
+    if (!Array.isArray(raw) && raw) {
+      const d = raw.data ?? raw;
+      if (Array.isArray(d.chartData)) return d.chartData;
+      if (Array.isArray(d.chart))     return d.chart;
+      if (Array.isArray(d.dailyData)) return d.dailyData;
+    }
+    // Build from raw rows by date
+    const map = {};
+    for (const r of rawRows) {
+      const dt = r.date ?? r.docDate ?? r.DocDate;
+      if (!dt) continue;
+      const key = String(dt).slice(0, 10);
+      map[key] = (map[key] || 0) + (Number(r.totalUZS) || 0);
+    }
+    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b)).map(([date, totalUZS]) => ({ date, totalUZS }));
+  }, [raw, rawRows]);
 
   const totals = useMemo(() => {
-    if (!raw) return {};
+    if (!raw || Array.isArray(raw)) return {};
     const d = raw.data ?? raw;
     return d.totals ?? d.summary ?? d.kpi ?? {};
   }, [raw]);

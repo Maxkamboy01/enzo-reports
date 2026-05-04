@@ -13,14 +13,16 @@ const fmt = n => n == null || n === '' ? '—' : Math.round(Number(n)).toString(
 
 const COLORS = ['#64748B','#DC2626','#D97706','#7C3AED','#0891B2','#059669','#F59E0B','#0D9488'];
 
+const gv = (r, keys) => { for (const k of keys) if (r[k] != null && r[k] !== '') return r[k]; return '—'; };
+
 const LIST_COLS = [
-  { key: 'date',        label: { uz: 'Sana',     ru: 'Дата',          en: 'Date' } },
-  { key: 'accountCode', label: { uz: 'Hisob',    ru: 'Счёт',          en: 'Account' } },
-  { key: 'accountName', label: { uz: 'Nomi',     ru: 'Наименование',  en: 'Name' } },
-  { key: 'document',    label: { uz: 'Hujjat',   ru: 'Документ',      en: 'Document' } },
-  { key: 'debitUZS',   label: { uz: 'Debet UZS', ru: 'Дебет UZS',    en: 'Debit UZS' },  right: true },
-  { key: 'creditUZS',  label: { uz: 'Kredit UZS', ru: 'Кредит UZS',  en: 'Credit UZS' }, right: true },
-  { key: 'comment',    label: { uz: 'Izoh',      ru: 'Комментарий',   en: 'Comment' } },
+  { label: { uz: 'Sana',      ru: 'Дата',         en: 'Date' },     resolver: r => String(gv(r, ['date','refDate','RefDate','DocDate'])).slice(0, 10) },
+  { label: { uz: 'Hisob',     ru: 'Счёт',         en: 'Account' },  resolver: r => gv(r, ['accountCode','acctCode','account','Account']) },
+  { label: { uz: 'Nomi',      ru: 'Наименование', en: 'Name' },     resolver: r => gv(r, ['accountName','acctName','AcctName']) },
+  { label: { uz: 'Hujjat',    ru: 'Документ',     en: 'Document' }, resolver: r => gv(r, ['document','docNum','baseRef']) },
+  { label: { uz: 'Debet UZS', ru: 'Дебет UZS',   en: 'Debit UZS' }, resolver: r => fmt(gv(r, ['debitUZS','debit','Debit'])), right: true },
+  { label: { uz: 'Kredit UZS', ru: 'Кредит UZS', en: 'Credit UZS' }, resolver: r => fmt(gv(r, ['creditUZS','credit','Credit'])), right: true },
+  { label: { uz: 'Izoh',      ru: 'Комментарий',  en: 'Comment' },  resolver: r => gv(r, ['comment','lineMemo','LineMemo','memo','user']) },
 ];
 
 export default function ExpensesPage() {
@@ -44,12 +46,16 @@ export default function ExpensesPage() {
   const isFetching = fetchList;
   const refetch = () => { refetchList(); refetchSum(); };
 
-  const totalDebit  = useMemo(() => list.reduce((s, r) => s + (Number(r.debitUZS)  || 0), 0), [list]);
-  const totalCredit = useMemo(() => list.reduce((s, r) => s + (Number(r.creditUZS) || 0), 0), [list]);
+  const totalDebit  = useMemo(() => list.reduce((s, r) => s + (Number(r.debitUZS  ?? r.debit  ?? r.Debit)  || 0), 0), [list]);
+  const totalCredit = useMemo(() => list.reduce((s, r) => s + (Number(r.creditUZS ?? r.credit ?? r.Credit) || 0), 0), [list]);
+
+  const getAcctName = r => r.accountName ?? r.acctName ?? r.AcctName ?? r.accountCode ?? r.acctCode ?? '—';
+  const getNetUZS   = r => Number(r.netUZS ?? r.totalDebitUZS ?? r.debitUZS ?? r.amount ?? 0);
 
   const chartData = useMemo(() =>
-    summary.filter(r => (Number(r.netUZS) || 0) > 0)
-           .sort((a, b) => b.netUZS - a.netUZS)
+    summary.map(r => ({ ...r, _name: getAcctName(r), _val: getNetUZS(r) }))
+           .filter(r => r._val > 0)
+           .sort((a, b) => b._val - a._val)
            .slice(0, 10),
   [summary]);
 
@@ -103,7 +109,7 @@ export default function ExpensesPage() {
             <div style={{ padding: '0 16px 16px' }}>
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
-                  <Pie data={chartData} dataKey="netUZS" nameKey="accountName" innerRadius={55} outerRadius={90}>
+                  <Pie data={chartData} dataKey="_val" nameKey="_name" innerRadius={55} outerRadius={90}>
                     {chartData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
                   <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ fontSize: '0.7rem' }}>{v}</span>} />
@@ -133,10 +139,10 @@ export default function ExpensesPage() {
                   <tr><td colSpan={4} className={styles.emptyRow}>{T({ uz: "Ma'lumot topilmadi", ru: 'Данные не найдены', en: 'No data found' })}</td></tr>
                 ) : summary.map((r, i) => (
                   <tr key={i} className={styles.tr}>
-                    <td className={styles.td}>{r.accountCode ?? '—'}</td>
-                    <td className={styles.td}>{r.accountName ?? '—'}</td>
-                    <td className={styles.tdR}>{fmt(r.totalDebitUZS)}</td>
-                    <td className={styles.tdR}>{fmt(r.netUZS)}</td>
+                    <td className={styles.td}>{gv(r, ['accountCode','acctCode','account'])}</td>
+                    <td className={styles.td}>{getAcctName(r)}</td>
+                    <td className={styles.tdR}>{fmt(r.totalDebitUZS ?? r.debitUZS)}</td>
+                    <td className={styles.tdR}>{fmt(getNetUZS(r))}</td>
                   </tr>
                 ))}
               </tbody>
@@ -176,9 +182,9 @@ export default function ExpensesPage() {
               ) : list.map((row, i) => (
                 <tr key={i} className={styles.tr}>
                   <td className={styles.numTd}>{i + 1}</td>
-                  {LIST_COLS.map(c => (
-                    <td key={c.key} className={c.right ? styles.tdR : styles.td}>
-                      {c.right ? fmt(row[c.key]) : (row[c.key] != null ? String(row[c.key]).slice(0, 10) === row[c.key] && c.key === 'date' ? String(row[c.key]).slice(0, 10) : row[c.key] : '—')}
+                  {LIST_COLS.map((c, ci) => (
+                    <td key={ci} className={c.right ? styles.tdR : styles.td}>
+                      {c.resolver(row)}
                     </td>
                   ))}
                 </tr>
@@ -190,7 +196,7 @@ export default function ExpensesPage() {
                   <td colSpan={5} className={styles.td}>{T({ uz: 'JAMI', ru: 'ИТОГО', en: 'TOTAL' })}</td>
                   <td className={styles.tdR}>{fmt(totalDebit)}</td>
                   <td className={styles.tdR}>{fmt(totalCredit)}</td>
-                  <td className={styles.td} />
+                  <td />
                 </tr>
               </tfoot>
             )}

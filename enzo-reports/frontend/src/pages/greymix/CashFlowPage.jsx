@@ -13,18 +13,20 @@ const T = o => o[lang] ?? o.uz ?? '';
 
 const fmt = n => n == null || n === '' ? '—' : Math.round(Number(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
+const getName = (r, keys) => { for (const k of keys) if (r[k]) return r[k]; return '—'; };
+
 const IN_COLS = [
-  { key: 'customerName', label: { uz: 'Xaridor',    ru: 'Покупатель',    en: 'Customer' } },
-  { key: 'cashUZS',      label: { uz: 'Naqd UZS',   ru: 'Нал. UZS',      en: 'Cash UZS' },    right: true },
-  { key: 'transferUZS',  label: { uz: 'O\'tkaz UZS', ru: 'Перевод UZS',   en: 'Transfer UZS' }, right: true },
-  { key: 'totalUZS',     label: { uz: 'Jami UZS',   ru: 'Итого UZS',     en: 'Total UZS' },   right: true },
+  { key: '_name',       label: { uz: 'Xaridor',    ru: 'Покупатель',    en: 'Customer' },     resolver: r => getName(r, ['customerName','cardName','partnerName','name']) },
+  { key: 'cashUZS',     label: { uz: 'Naqd UZS',   ru: 'Нал. UZS',      en: 'Cash UZS' },     right: true },
+  { key: 'transferUZS', label: { uz: "O'tkaz UZS", ru: 'Перевод UZS',   en: 'Transfer UZS' }, right: true },
+  { key: 'totalUZS',    label: { uz: 'Jami UZS',   ru: 'Итого UZS',     en: 'Total UZS' },    right: true },
 ];
 
 const OUT_COLS = [
-  { key: 'vendorName',  label: { uz: 'Yetkazuvchi', ru: 'Поставщик',     en: 'Vendor' } },
-  { key: 'cashUZS',     label: { uz: 'Naqd UZS',    ru: 'Нал. UZS',      en: 'Cash UZS' },    right: true },
-  { key: 'transferUZS', label: { uz: 'O\'tkaz UZS', ru: 'Перевод UZS',   en: 'Transfer UZS' }, right: true },
-  { key: 'totalUZS',    label: { uz: 'Jami UZS',    ru: 'Итого UZS',     en: 'Total UZS' },   right: true },
+  { key: '_name',       label: { uz: 'Yetkazuvchi', ru: 'Поставщик',    en: 'Vendor' },        resolver: r => getName(r, ['vendorName','cardName','partnerName','name']) },
+  { key: 'cashUZS',     label: { uz: 'Naqd UZS',    ru: 'Нал. UZS',     en: 'Cash UZS' },     right: true },
+  { key: 'transferUZS', label: { uz: "O'tkaz UZS",  ru: 'Перевод UZS',  en: 'Transfer UZS' }, right: true },
+  { key: 'totalUZS',    label: { uz: 'Jami UZS',    ru: 'Итого UZS',    en: 'Total UZS' },    right: true },
 ];
 
 export default function CashFlowPage() {
@@ -52,12 +54,14 @@ export default function CashFlowPage() {
   const totalOut = useMemo(() => outgoing.reduce((s, r) => s + (Number(r.totalUZS) || 0), 0), [outgoing]);
   const saldo    = totalIn - totalOut;
 
+  const getN = r => r ? (r.customerName ?? r.vendorName ?? r.cardName ?? r.partnerName ?? r.name ?? '—') : '—';
+
   const chartData = useMemo(() => {
     const top = Math.max(incoming.length, outgoing.length);
     const rows = [];
     for (let i = 0; i < Math.min(top, 10); i++) {
       rows.push({
-        name: (incoming[i]?.customerName ?? outgoing[i]?.vendorName ?? `#${i + 1}`).slice(0, 20),
+        name: (getN(incoming[i]) !== '—' ? getN(incoming[i]) : getN(outgoing[i]) !== '—' ? getN(outgoing[i]) : `#${i + 1}`).slice(0, 18),
         in:  Number(incoming[i]?.totalUZS) || 0,
         out: Number(outgoing[i]?.totalUZS) || 0,
       });
@@ -156,7 +160,7 @@ export default function CashFlowPage() {
                     <td className={styles.numTd}>{i + 1}</td>
                     {IN_COLS.map(c => (
                       <td key={c.key} className={c.right ? styles.tdR : styles.td}>
-                        {c.right ? fmt(row[c.key]) : (row[c.key] ?? '—')}
+                        {c.resolver ? c.resolver(row) : c.right ? fmt(row[c.key]) : (row[c.key] ?? '—')}
                       </td>
                     ))}
                   </tr>
@@ -197,7 +201,7 @@ export default function CashFlowPage() {
                     <td className={styles.numTd}>{i + 1}</td>
                     {OUT_COLS.map(c => (
                       <td key={c.key} className={c.right ? styles.tdR : styles.td}>
-                        {c.right ? fmt(row[c.key]) : (row[c.key] ?? '—')}
+                        {c.resolver ? c.resolver(row) : c.right ? fmt(row[c.key]) : (row[c.key] ?? '—')}
                       </td>
                     ))}
                   </tr>

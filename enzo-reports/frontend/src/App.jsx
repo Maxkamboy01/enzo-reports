@@ -103,6 +103,9 @@ export default function App() {
             {/* Hub — no sidebar */}
             <Route path="/hub" element={<ProtectedRoute><ModulesHub /></ProtectedRoute>} />
 
+            {/* Settings — standalone (no sidebar) */}
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+
             {/* Greymix Analytics modules — simple layout with back button */}
             <Route element={<ProtectedRoute><ModuleLayout /></ProtectedRoute>}>
               <Route path="/sales"     element={<SalesPage />} />
@@ -203,8 +206,6 @@ export default function App() {
 
               <Route path="/jbi/inventory-transfer" element={<DBRoute db="jbi"><InventoryTransfer fetcher={dashJbi.inventoryTransfer} queryKey="jbi-inventory-transfer" /></DBRoute>} />
 
-              {/* Settings */}
-              <Route path="/settings" element={<Settings />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/hub" replace />} />
