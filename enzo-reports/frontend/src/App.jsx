@@ -104,8 +104,6 @@ export default function App() {
             {/* Hub — no sidebar */}
             <Route path="/hub" element={<ProtectedRoute><ModulesHub /></ProtectedRoute>} />
 
-            {/* Settings — standalone (no sidebar) */}
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
             {/* Greymix Analytics modules — simple layout with back button */}
             <Route element={<ProtectedRoute><ModuleLayout /></ProtectedRoute>}>
@@ -118,6 +116,7 @@ export default function App() {
               <Route path="/cashflow"  element={<CashFlowPage />} />
               <Route path="/pnl"          element={<PnlPage />} />
               <Route path="/product-cost" element={<ProductCostPage />} />
+              <Route path="/settings"     element={<Settings />} />
             </Route>
 
             {/* Production modules — existing sidebar layout */}

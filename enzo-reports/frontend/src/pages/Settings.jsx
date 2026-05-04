@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../context/I18nContext';
 import { useAuth } from '../context/AuthContext';
-import { Globe, Database, CheckCircle, XCircle, LogOut, ChevronLeft, Key, Save, ChevronDown, ChevronUp } from 'lucide-react';
+import { Globe, Database, CheckCircle, XCircle, LogOut, Key, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import styles from './Settings.module.css';
 
 const LANGS = [
@@ -14,7 +13,6 @@ const LANGS = [
 export default function Settings() {
   const { lang, changeLang, t } = useI18n();
   const { user, dbTokens, DB_META, logout, setManualToken } = useAuth();
-  const navigate = useNavigate();
 
   const [expanded, setExpanded] = useState(null);
   const [tokenInputs, setTokenInputs] = useState({ cement: '', shifer: '', jbi: '' });
@@ -32,11 +30,7 @@ export default function Settings() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
-        <button className={styles.back} onClick={() => navigate(-1)}>
-          <ChevronLeft size={16} />
-          {t('ui.back') || 'Орқага'}
-        </button>
+      <div className={styles.pageHeader}>
         <h1 className={styles.title}>{t('settings.title')}</h1>
         <p className={styles.sub}>{t('settings.sub') || 'Сайт созламалари'}</p>
       </div>

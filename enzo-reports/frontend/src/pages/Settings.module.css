@@ -7,18 +7,10 @@
   animation: fadeUp 0.2s ease;
 }
 
-.header { display: flex; flex-direction: column; gap: 6px; }
+.pageHeader { display: flex; flex-direction: column; gap: 4px; }
 
-.back {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 0.8rem; font-weight: 500; color: var(--grey-500);
-  background: none; padding: 0; margin-bottom: 4px;
-  transition: color var(--t-fast);
-}
-.back:hover { color: var(--primary); }
-
-.title { font-size: 1.4rem; font-weight: 800; color: var(--grey-900); }
-.sub { font-size: 0.82rem; color: var(--grey-500); }
+.title { font-size: 1.3rem; font-weight: 800; color: var(--grey-900); }
+.sub { font-size: 0.8rem; color: var(--grey-500); margin-top: 4px; }
 
 /* Section card */
 .section {
