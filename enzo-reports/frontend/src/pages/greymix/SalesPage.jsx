@@ -4,7 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { TrendingUp, RefreshCw, Calendar, Users, FileText, DollarSign } from 'lucide-react';
+import { TrendingUp, RefreshCw, Calendar, Users, FileText } from 'lucide-react';
 import { dashGreymix } from '../../services/apiGreymix';
 import styles from './ModulePage.module.css';
 
@@ -12,19 +12,16 @@ const L = localStorage.getItem('enzo_lang') || 'uz';
 const lang = ['uz','ru','en'].includes(L) ? L : 'uz';
 
 const PERIODS = [
-  { id: 'day',   label: { uz: 'Kun',   ru: 'День',    en: 'Day' } },
-  { id: 'week',  label: { uz: 'Hafta', ru: 'Неделя',  en: 'Week' } },
-  { id: 'month', label: { uz: 'Oy',    ru: 'Месяц',   en: 'Month' } },
+  { id: 'day',   label: { uz: 'Kun',   ru: 'День',   en: 'Day' } },
+  { id: 'week',  label: { uz: 'Hafta', ru: 'Неделя', en: 'Week' } },
+  { id: 'month', label: { uz: 'Oy',    ru: 'Месяц',  en: 'Month' } },
 ];
 
 const COLORS = ['#1B3A8C','#059669','#D97706','#DC2626','#7C3AED','#0891B2','#F59E0B','#0D9488'];
 
-const fmt = (n, prefix = '') =>
-  n == null || n === '' ? '—' : prefix + Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 0 });
-
+const fmt = n => n == null || n === '' ? '—' : Math.round(Number(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const fmtDate = d => d ? String(d).slice(0, 10) : '';
-
-const T = (obj) => obj[lang] ?? obj.uz ?? '';
+const T = o => o[lang] ?? o.uz ?? '';
 
 export default function SalesPage() {
   const today = new Date().toISOString().slice(0, 10);
@@ -38,24 +35,18 @@ export default function SalesPage() {
     staleTime: 60000,
   });
 
-  // Flexibly extract sub-arrays from various possible response shapes
   const managers = useMemo(() => {
     if (!raw) return [];
     if (Array.isArray(raw)) return raw;
     const d = raw.data ?? raw;
     if (Array.isArray(d)) return d;
-    return Array.isArray(d.managers) ? d.managers
-         : Array.isArray(d.managerData) ? d.managerData
-         : [];
+    return Array.isArray(d.managers) ? d.managers : Array.isArray(d.managerData) ? d.managerData : [];
   }, [raw]);
 
   const chartData = useMemo(() => {
     if (!raw) return [];
     const d = raw.data ?? raw;
-    return Array.isArray(d.chartData) ? d.chartData
-         : Array.isArray(d.chart) ? d.chart
-         : Array.isArray(d.dailyData) ? d.dailyData
-         : [];
+    return Array.isArray(d.chartData) ? d.chartData : Array.isArray(d.chart) ? d.chart : Array.isArray(d.dailyData) ? d.dailyData : [];
   }, [raw]);
 
   const totals = useMemo(() => {
@@ -64,27 +55,24 @@ export default function SalesPage() {
     return d.totals ?? d.summary ?? d.kpi ?? {};
   }, [raw]);
 
-  const totalUSD = totals.salesUSD ?? totals.totalUSD ?? totals.totalSalesUSD ?? (managers.reduce((s, m) => s + (Number(m.totalUSD) || 0), 0) || null);
-  const totalUZS = totals.salesUZS ?? totals.totalUZS ?? totals.totalSalesUZS ?? (managers.reduce((s, m) => s + (Number(m.totalUZS) || 0), 0) || null);
+  const totalUZS     = totals.salesUZS ?? totals.totalUZS ?? totals.totalSalesUZS ?? (managers.reduce((s, m) => s + (Number(m.totalUZS) || 0), 0) || null);
   const invoiceCount = totals.invoiceCount ?? totals.invoices ?? (managers.reduce((s, m) => s + (Number(m.invoiceCount) || 0), 0) || null);
   const managerCount = totals.managerCount ?? totals.managers ?? (managers.length || null);
 
   const STAT_CARDS = [
-    { key: 'totalUSD',   value: fmt(totalUSD, '$'),  label: T({ uz: 'JAMI SOTUVLAR USD', ru: 'ИТОГО ПРОДАЖИ USD', en: 'TOTAL SALES USD' }),   icon: DollarSign, color: '#059669' },
-    { key: 'totalUZS',   value: fmt(totalUZS),       label: T({ uz: 'JAMI SOTUVLAR UZS', ru: 'ИТОГО ПРОДАЖИ UZS', en: 'TOTAL SALES UZS' }),   icon: TrendingUp, color: '#0891B2' },
-    { key: 'invoices',   value: fmt(invoiceCount),   label: T({ uz: 'HUJJATLAR',          ru: 'НАКЛАДНЫХ',          en: 'DOCUMENTS' }),          icon: FileText,   color: '#7C3AED' },
-    { key: 'managers',   value: fmt(managerCount),   label: T({ uz: 'MENEJERLAR',         ru: 'МЕНЕДЖЕРОВ',         en: 'MANAGERS' }),           icon: Users,      color: '#F59E0B' },
+    { key: 'totalUZS',   value: fmt(totalUZS),     label: T({ uz: 'JAMI SOTUVLAR UZS', ru: 'ИТОГО ПРОДАЖИ UZS', en: 'TOTAL SALES UZS' }),   icon: TrendingUp, color: '#059669' },
+    { key: 'invoices',   value: fmt(invoiceCount), label: T({ uz: 'HUJJATLAR',          ru: 'НАКЛАДНЫХ',          en: 'DOCUMENTS' }),          icon: FileText,   color: '#7C3AED' },
+    { key: 'managers',   value: fmt(managerCount), label: T({ uz: 'MENEJERLAR',         ru: 'МЕНЕДЖЕРОВ',         en: 'MANAGERS' }),           icon: Users,      color: '#F59E0B' },
   ];
 
   const COLS = [
-    { key: 'manager',      label: T({ uz: 'Menejer',        ru: 'Менеджер',     en: 'Manager' }),      right: false },
-    { key: 'totalUSD',     label: T({ uz: 'Summa USD',      ru: 'Сумма USD',    en: 'Amount USD' }),   right: true,  prefix: '$' },
-    { key: 'totalUZS',     label: T({ uz: 'Summa UZS',      ru: 'Сумма UZS',    en: 'Amount UZS' }),   right: true },
-    { key: 'invoiceCount', label: T({ uz: 'Hujjatlar',      ru: 'Накладных',    en: 'Documents' }),    right: true },
+    { key: 'manager',      label: T({ uz: 'Menejer',   ru: 'Менеджер',  en: 'Manager' }),   right: false },
+    { key: 'totalUZS',     label: T({ uz: 'Summa UZS', ru: 'Сумма UZS', en: 'Amount UZS' }), right: true },
+    { key: 'invoiceCount', label: T({ uz: 'Hujjatlar', ru: 'Накладных', en: 'Documents' }), right: true },
   ];
 
-  const hasChart  = chartData.length > 0;
-  const hasMgrs   = managers.length > 0;
+  const hasChart = chartData.length > 0;
+  const hasMgrs  = managers.length > 0;
 
   const Loading = () => (
     <div className={styles.emptyRow} style={{ padding: '40px 20px' }}>
@@ -94,7 +82,6 @@ export default function SalesPage() {
 
   return (
     <div className={styles.page}>
-      {/* Header */}
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>{T({ uz: 'Sotuvlar', ru: 'Продажи', en: 'Sales' })}</h1>
@@ -120,7 +107,6 @@ export default function SalesPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className={styles.statsGrid}>
         {STAT_CARDS.map(c => {
           const Icon = c.icon;
@@ -134,9 +120,7 @@ export default function SalesPage() {
         })}
       </div>
 
-      {/* Charts row */}
       <div className={styles.chartsRow}>
-        {/* Daily line chart — UZS */}
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
             <span className={styles.chartAccent} style={{ background: '#059669' }} />
@@ -146,15 +130,15 @@ export default function SalesPage() {
             </div>
           </div>
           {isLoading ? <Loading /> : !hasChart ? (
-            <div className={styles.chartEmpty}><span>{T({ uz: 'Ma\'lumot yo\'q', ru: 'Нет данных', en: 'No data' })}</span></div>
+            <div className={styles.chartEmpty}><span>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</span></div>
           ) : (
             <div style={{ padding: '0 16px 16px' }}>
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={fmtDate} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e3 ? (v/1e3).toFixed(0)+'K' : v} />
-                  <Tooltip formatter={(v) => fmt(v)} labelFormatter={fmtDate} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1e9 ? (v/1e9).toFixed(1)+'B' : v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e3 ? (v/1e3).toFixed(0)+'K' : v} />
+                  <Tooltip formatter={v => fmt(v)} labelFormatter={fmtDate} />
                   <Line type="monotone" dataKey="totalUZS" stroke="#059669" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
@@ -162,7 +146,6 @@ export default function SalesPage() {
           )}
         </div>
 
-        {/* Manager donut */}
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
             <span className={styles.chartAccent} style={{ background: '#1B3A8C' }} />
@@ -189,9 +172,8 @@ export default function SalesPage() {
         </div>
       </div>
 
-      {/* Manager table */}
       <div className={styles.tableCard}>
-        <div className={styles.tableCardHeader}>
+        <div className={styles.tableCardHeader} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div className={styles.tableCardTitle}>{T({ uz: "Menejerlar bo'yicha hisobot", ru: 'Отчёт по менеджерам', en: 'Manager report' })}</div>
             <div className={styles.tableCardSub}>{dateFrom} — {dateTo}</div>
@@ -214,7 +196,7 @@ export default function SalesPage() {
                   <td className={styles.numTd}>{i + 1}</td>
                   {COLS.map(c => (
                     <td key={c.key} className={c.right ? styles.tdR : styles.td}>
-                      {c.prefix ? fmt(row[c.key], c.prefix) : (row[c.key] ?? '—')}
+                      {c.right ? fmt(row[c.key]) : (row[c.key] ?? '—')}
                     </td>
                   ))}
                 </tr>

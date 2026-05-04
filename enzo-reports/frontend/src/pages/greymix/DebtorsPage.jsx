@@ -9,17 +9,15 @@ const L = localStorage.getItem('enzo_lang') || 'uz';
 const lang = ['uz','ru','en'].includes(L) ? L : 'uz';
 const T = o => o[lang] ?? o.uz ?? '';
 
-const fmt = (n, prefix = '') =>
-  n == null || n === '' ? '—' : prefix + Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 0 });
+const fmt = n => n == null || n === '' ? '—' : Math.round(Number(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
 const COLORS = ['#DC2626','#1B3A8C','#059669','#D97706','#7C3AED','#0891B2','#F59E0B','#0D9488'];
 
 const COLS = [
-  { key: 'cardCode',    label: { uz: 'Kod',        ru: 'Код',           en: 'Code' } },
-  { key: 'cardName',    label: { uz: 'Nomi',       ru: 'Наименование',  en: 'Name' } },
-  { key: 'groupName',   label: { uz: 'Guruh',      ru: 'Группа',        en: 'Group' } },
-  { key: 'balanceUZS',  label: { uz: 'Balans UZS', ru: 'Баланс UZS',   en: 'Balance UZS' }, right: true },
-  { key: 'balanceUSD',  label: { uz: 'Balans USD', ru: 'Баланс USD',   en: 'Balance USD' }, right: true, prefix: '$' },
+  { key: 'cardCode', label: { uz: 'Kod',       ru: 'Код',          en: 'Code' } },
+  { key: 'cardName', label: { uz: 'Nomi',      ru: 'Наименование', en: 'Name' } },
+  { key: 'group',    label: { uz: 'Guruh',     ru: 'Группа',       en: 'Group' } },
+  { key: 'balanceUZS', label: { uz: 'Balans UZS', ru: 'Баланс UZS', en: 'Balance UZS' }, right: true },
 ];
 
 export default function DebtorsPage() {
@@ -40,26 +38,17 @@ export default function DebtorsPage() {
     );
   }, [data, search]);
 
-  const totalUSD = useMemo(() =>
-    data.reduce((s, r) => s + (Number(r.balanceUSD) || 0), 0), [data]);
+  const totalUZS = useMemo(() =>
+    data.reduce((s, r) => s + (Number(r.balanceUZS) || 0), 0), [data]);
 
   const groupChart = useMemo(() => {
     const map = {};
     for (const r of data) {
       const g = r.groupName ?? r.group ?? T({ uz: 'Boshqa', ru: 'Прочие', en: 'Other' });
-      map[g] = (map[g] || 0) + (Number(r.balanceUSD) || 0);
+      map[g] = (map[g] || 0) + (Number(r.balanceUZS) || 0);
     }
-    return Object.entries(map)
-      .map(([name, value]) => ({ name, value }))
-      .filter(e => e.value > 0)
-      .sort((a, b) => b.value - a.value);
+    return Object.entries(map).map(([name, value]) => ({ name, value })).filter(e => e.value > 0).sort((a, b) => b.value - a.value);
   }, [data]);
-
-  const Loading = () => (
-    <div className={styles.emptyRow}>
-      <div className={styles.spinner} style={{ margin: '0 auto' }} />
-    </div>
-  );
 
   return (
     <div className={styles.page}>
@@ -73,37 +62,31 @@ export default function DebtorsPage() {
         </button>
       </div>
 
-      {/* KPI */}
       <div className={styles.accountsTotals}>
         <div className={styles.accountTotalCard} style={{ borderLeftColor: '#DC2626' }}>
-          <div className={styles.accountTotalLabel}>{T({ uz: 'JAMI DEBITORLIK USD', ru: 'ИТОГО ДЕБИТОРОВ USD', en: 'TOTAL DEBTORS USD' })}</div>
-          <div className={styles.accountTotalValue} style={{ color: '#DC2626' }}>
-            {isLoading ? '…' : fmt(totalUSD, '$')}
-          </div>
+          <div className={styles.accountTotalLabel}>{T({ uz: 'JAMI DEBITORLIK UZS', ru: 'ИТОГО ДЕБИТОРОВ UZS', en: 'TOTAL DEBTORS UZS' })}</div>
+          <div className={styles.accountTotalValue} style={{ color: '#DC2626' }}>{isLoading ? '…' : fmt(totalUZS)}</div>
           <div className={styles.accountTotalIcon} style={{ color: '#DC2626' }}><UserMinus size={32} /></div>
         </div>
         <div className={styles.accountTotalCard} style={{ borderLeftColor: '#1B3A8C' }}>
           <div className={styles.accountTotalLabel}>{T({ uz: 'DEBITORLAR SONI', ru: 'КОЛИЧЕСТВО ДЕБИТОРОВ', en: 'DEBTOR COUNT' })}</div>
-          <div className={styles.accountTotalValue} style={{ color: '#1B3A8C' }}>
-            {isLoading ? '…' : data.length}
-          </div>
+          <div className={styles.accountTotalValue} style={{ color: '#1B3A8C' }}>{isLoading ? '…' : data.length}</div>
           <div className={styles.accountTotalIcon} style={{ color: '#1B3A8C' }}><UserMinus size={32} /></div>
         </div>
       </div>
 
-      {/* Donut chart by group */}
       <div className={styles.chartCard}>
         <div className={styles.chartHeader}>
           <span className={styles.chartAccent} style={{ background: '#DC2626' }} />
           <div>
             <div className={styles.chartTitle}>{T({ uz: "Guruhlar bo'yicha tuzilma", ru: 'Структура по группам', en: 'Structure by groups' })}</div>
-            <div className={styles.chartSub}>{T({ uz: 'Debitorlik qarzdorligi USD', ru: 'Дебиторская задолженность USD', en: 'Debtors total USD' })}</div>
+            <div className={styles.chartSub}>{T({ uz: 'Debitorlik qarzdorligi UZS', ru: 'Дебиторская задолженность UZS', en: 'Debtors total UZS' })}</div>
           </div>
         </div>
-        {isLoading ? <Loading /> : groupChart.length === 0 ? (
-          <div className={styles.chartEmpty}>
-            <span>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</span>
-          </div>
+        {isLoading ? (
+          <div className={styles.emptyRow}><div className={styles.spinner} style={{ margin: '0 auto' }} /></div>
+        ) : groupChart.length === 0 ? (
+          <div className={styles.chartEmpty}><span>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</span></div>
         ) : (
           <div style={{ padding: '0 16px 16px' }}>
             <ResponsiveContainer width="100%" height={200}>
@@ -112,14 +95,13 @@ export default function DebtorsPage() {
                   {groupChart.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
                 <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ fontSize: '0.72rem' }}>{v}</span>} />
-                <Tooltip formatter={v => fmt(v, '$')} />
+                <Tooltip formatter={v => fmt(v)} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         )}
       </div>
 
-      {/* Search & total bar */}
       <div className={styles.bpFilterBar}>
         <div className={styles.searchWrap}>
           <Search size={14} className={styles.searchIcon} />
@@ -133,15 +115,10 @@ export default function DebtorsPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className={styles.tableCard}>
         <div className={styles.tableCardHeader} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <div className={styles.tableCardTitle}>{T({ uz: 'Debitorlar ro\'yxati', ru: 'Список дебиторов', en: 'Debtors list' })}</div>
-          </div>
-          {!isLoading && data.length > 0 && (
-            <span className={styles.rowCount}>{data.length} {T({ uz: 'ta', ru: 'шт.', en: 'items' })}</span>
-          )}
+          <div className={styles.tableCardTitle}>{T({ uz: "Debitorlar ro'yxati", ru: 'Список дебиторов', en: 'Debtors list' })}</div>
+          {!isLoading && <span className={styles.rowCount}>{data.length} {T({ uz: 'ta', ru: 'шт.', en: 'items' })}</span>}
         </div>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
@@ -151,19 +128,15 @@ export default function DebtorsPage() {
             </tr></thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={COLS.length + 1} className={styles.emptyRow}>
-                  <div className={styles.spinner} style={{ margin: '0 auto' }} />
-                </td></tr>
+                <tr><td colSpan={COLS.length + 1} className={styles.emptyRow}><div className={styles.spinner} style={{ margin: '0 auto' }} /></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={COLS.length + 1} className={styles.emptyRow}>
-                  {T({ uz: "Ma'lumot topilmadi", ru: 'Данные не найдены', en: 'No data found' })}
-                </td></tr>
+                <tr><td colSpan={COLS.length + 1} className={styles.emptyRow}>{T({ uz: "Ma'lumot topilmadi", ru: 'Данные не найдены', en: 'No data found' })}</td></tr>
               ) : filtered.map((row, i) => (
                 <tr key={i} className={styles.tr}>
                   <td className={styles.numTd}>{i + 1}</td>
                   {COLS.map(c => (
                     <td key={c.key} className={c.right ? styles.tdR : styles.td}>
-                      {c.prefix ? fmt(row[c.key], c.prefix) : (row[c.key] ?? '—')}
+                      {c.right ? fmt(row[c.key]) : (row[c.key] ?? '—')}
                     </td>
                   ))}
                 </tr>

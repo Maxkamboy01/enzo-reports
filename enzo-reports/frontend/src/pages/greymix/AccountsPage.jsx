@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { RefreshCw, DollarSign, Landmark } from 'lucide-react';
+import { RefreshCw, Landmark } from 'lucide-react';
 import { dashGreymix } from '../../services/apiGreymix';
 import styles from './ModulePage.module.css';
 
@@ -8,14 +8,13 @@ const L = localStorage.getItem('enzo_lang') || 'uz';
 const lang = ['uz','ru','en'].includes(L) ? L : 'uz';
 const T = o => o[lang] ?? o.uz ?? '';
 
-const fmt = (n) => n == null ? '—' : Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+const fmt = n => n == null ? '—' : Math.round(Number(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-// Group accounts by prefix (501x = Cash USD, 511x = Cash UZS, 521x = Cards, 531x = Transfers)
 function groupAccounts(accounts) {
   const groups = {};
   for (const acc of accounts) {
     const code = String(acc.accountCode ?? acc.acctCode ?? '');
-    const prefix = code.slice(0, 2); // e.g. "50", "51"
+    const prefix = code.slice(0, 2);
     if (!groups[prefix]) groups[prefix] = [];
     groups[prefix].push(acc);
   }
@@ -25,8 +24,8 @@ function groupAccounts(accounts) {
 const GROUP_META = {
   '50': { label: { uz: 'Kassa USD',    ru: 'Касса USD',    en: 'Cash USD' },    color: '#059669' },
   '51': { label: { uz: 'Kassa UZS',    ru: 'Касса UZS',    en: 'Cash UZS' },    color: '#0891B2' },
-  '52': { label: { uz: 'Kartalar',      ru: 'Карты',         en: 'Cards' },        color: '#7C3AED' },
-  '53': { label: { uz: "O'tkazmalar",   ru: 'Перечисления',  en: 'Transfers' },    color: '#F59E0B' },
+  '52': { label: { uz: 'Kartalar',     ru: 'Карты',         en: 'Cards' },       color: '#7C3AED' },
+  '53': { label: { uz: "O'tkazmalar",  ru: 'Перечисления',  en: 'Transfers' },   color: '#F59E0B' },
 };
 
 export default function AccountsPage() {
@@ -37,15 +36,7 @@ export default function AccountsPage() {
   });
 
   const grouped = useMemo(() => groupAccounts(data), [data]);
-
-  const totalUSD = useMemo(() =>
-    data.filter(a => String(a.accountCode ?? '').startsWith('50')).reduce((s, a) => s + Number(a.balance ?? 0), 0),
-  [data]);
-
-  const totalUZS = useMemo(() =>
-    data.filter(a => !String(a.accountCode ?? '').startsWith('50')).reduce((s, a) => s + Number(a.balance ?? 0), 0),
-  [data]);
-
+  const totalAll = useMemo(() => data.reduce((s, a) => s + Number(a.balance ?? 0), 0), [data]);
   const groupTotal = (accs) => accs.reduce((s, a) => s + Number(a.balance ?? 0), 0);
 
   return (
@@ -60,25 +51,16 @@ export default function AccountsPage() {
         </button>
       </div>
 
-      {/* Total KPI cards */}
-      <div className={styles.accountsTotals}>
-        <div className={styles.accountTotalCard} style={{ borderLeftColor: '#059669' }}>
-          <div className={styles.accountTotalLabel}>{T({ uz: 'JAMI USD', ru: 'ИТОГО USD', en: 'TOTAL USD' })}</div>
-          <div className={styles.accountTotalValue} style={{ color: '#059669' }}>
-            {isLoading ? '…' : fmt(totalUSD)}
-          </div>
-          <div className={styles.accountTotalIcon} style={{ color: '#059669' }}><DollarSign size={32} /></div>
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
         <div className={styles.accountTotalCard} style={{ borderLeftColor: '#0891B2' }}>
-          <div className={styles.accountTotalLabel}>{T({ uz: 'JAMI UZS', ru: 'ИТОГО UZS', en: 'TOTAL UZS' })}</div>
+          <div className={styles.accountTotalLabel}>{T({ uz: 'JAMI BALANS', ru: 'ОБЩИЙ БАЛАНС', en: 'TOTAL BALANCE' })}</div>
           <div className={styles.accountTotalValue} style={{ color: '#0891B2' }}>
-            {isLoading ? '…' : fmt(totalUZS)}
+            {isLoading ? '…' : fmt(totalAll)}
           </div>
           <div className={styles.accountTotalIcon} style={{ color: '#0891B2' }}><Landmark size={32} /></div>
         </div>
       </div>
 
-      {/* If no grouping match, show raw table */}
       {!isLoading && data.length > 0 && Object.keys(grouped).length === 0 && (
         <div className={styles.tableCard}>
           <div className={styles.tableWrap}>
@@ -102,7 +84,6 @@ export default function AccountsPage() {
         </div>
       )}
 
-      {/* Grouped account cards */}
       {Object.entries(grouped).map(([prefix, accs]) => {
         const meta = GROUP_META[prefix] ?? { label: { uz: prefix, ru: prefix, en: prefix }, color: '#64748B' };
         const total = groupTotal(accs);

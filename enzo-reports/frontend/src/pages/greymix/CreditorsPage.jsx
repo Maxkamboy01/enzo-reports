@@ -1,66 +1,146 @@
-import { useState } from 'react';
-import { Search, RefreshCw } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
+import { Search, RefreshCw, UserPlus } from 'lucide-react';
+import { dashGreymix } from '../../services/apiGreymix';
 import styles from './ModulePage.module.css';
 
+const L = localStorage.getItem('enzo_lang') || 'uz';
+const lang = ['uz','ru','en'].includes(L) ? L : 'uz';
+const T = o => o[lang] ?? o.uz ?? '';
+
+const fmt = n => n == null || n === '' ? '—' : Math.round(Number(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+const COLORS = ['#7C3AED','#1B3A8C','#DC2626','#D97706','#059669','#0891B2','#F59E0B','#0D9488'];
+
 const COLS = [
-  { key: 'code', label: { uz: 'Kod', ru: 'Код', en: 'Code' } },
-  { key: 'name', label: { uz: 'Nomi', ru: 'Наименование', en: 'Name' } },
-  { key: 'group', label: { uz: 'Guruh', ru: 'Группа', en: 'Group' } },
+  { key: 'cardCode', label: { uz: 'Kod',   ru: 'Код',          en: 'Code' } },
+  { key: 'cardName', label: { uz: 'Nomi',  ru: 'Наименование', en: 'Name' } },
+  { key: 'group',    label: { uz: 'Guruh', ru: 'Группа',       en: 'Group' } },
   { key: 'balanceUZS', label: { uz: 'Balans UZS', ru: 'Баланс UZS', en: 'Balance UZS' }, right: true },
-  { key: 'balanceUSD', label: { uz: 'Balans USD', ru: 'Баланс USD', en: 'Balance USD' }, right: true },
 ];
 
 export default function CreditorsPage() {
-  const lang = localStorage.getItem('enzo_lang') || 'uz';
-  const l = ['uz','ru','en'].includes(lang) ? lang : 'uz';
   const [search, setSearch] = useState('');
+
+  const { data = [], isLoading, isFetching, refetch } = useQuery({
+    queryKey: ['greymix-creditors-list'],
+    queryFn: () => dashGreymix.creditorsList(),
+    staleTime: 60000,
+  });
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return data;
+    const q = search.toLowerCase();
+    return data.filter(r =>
+      String(r.cardCode ?? r.code ?? '').toLowerCase().includes(q) ||
+      String(r.cardName ?? r.name ?? '').toLowerCase().includes(q)
+    );
+  }, [data, search]);
+
+  const totalUZS = useMemo(() =>
+    data.reduce((s, r) => s + Math.abs(Number(r.balanceUZS) || 0), 0), [data]);
+
+  const groupChart = useMemo(() => {
+    const map = {};
+    for (const r of data) {
+      const g = r.groupName ?? r.group ?? T({ uz: 'Boshqa', ru: 'Прочие', en: 'Other' });
+      map[g] = (map[g] || 0) + Math.abs(Number(r.balanceUZS) || 0);
+    }
+    return Object.entries(map).map(([name, value]) => ({ name, value })).filter(e => e.value > 0).sort((a, b) => b.value - a.value);
+  }, [data]);
 
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>{ { uz: 'Kreditorlar', ru: 'Кредиторы', en: 'Creditors' }[l]}</h1>
-          <p className={styles.pageSub}>{ { uz: "Ta'minotchilar qarzdorligi", ru: 'Задолженность поставщикам', en: 'Supplier payables' }[l]}</p>
+          <h1 className={styles.pageTitle}>{T({ uz: 'Kreditorlar', ru: 'Кредиторы', en: 'Creditors' })}</h1>
+          <p className={styles.pageSub}>{T({ uz: "Ta'minotchilar qarzdorligi", ru: 'Задолженность поставщикам', en: 'Supplier payables' })}</p>
         </div>
-        <button className={styles.refreshBtn}><RefreshCw size={13} /></button>
+        <button className={styles.refreshBtn} onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw size={13} className={isFetching ? styles.spin : ''} />
+        </button>
       </div>
 
-      <div className={styles.tableCard}>
-        <div className={styles.chartHeader} style={{ padding: '16px 20px 8px' }}>
+      <div className={styles.accountsTotals}>
+        <div className={styles.accountTotalCard} style={{ borderLeftColor: '#7C3AED' }}>
+          <div className={styles.accountTotalLabel}>{T({ uz: 'JAMI KREDITORLIK UZS', ru: 'ИТОГО КРЕДИТОРОВ UZS', en: 'TOTAL CREDITORS UZS' })}</div>
+          <div className={styles.accountTotalValue} style={{ color: '#7C3AED' }}>{isLoading ? '…' : fmt(totalUZS)}</div>
+          <div className={styles.accountTotalIcon} style={{ color: '#7C3AED' }}><UserPlus size={32} /></div>
+        </div>
+        <div className={styles.accountTotalCard} style={{ borderLeftColor: '#1B3A8C' }}>
+          <div className={styles.accountTotalLabel}>{T({ uz: 'KREDITORLAR SONI', ru: 'КОЛИЧЕСТВО КРЕДИТОРОВ', en: 'CREDITOR COUNT' })}</div>
+          <div className={styles.accountTotalValue} style={{ color: '#1B3A8C' }}>{isLoading ? '…' : data.length}</div>
+          <div className={styles.accountTotalIcon} style={{ color: '#1B3A8C' }}><UserPlus size={32} /></div>
+        </div>
+      </div>
+
+      <div className={styles.chartCard}>
+        <div className={styles.chartHeader}>
           <span className={styles.chartAccent} style={{ background: '#7C3AED' }} />
           <div>
-            <div className={styles.chartTitle}>{ { uz: "Guruhlar bo'yicha tuzilma", ru: 'Структура по группам', en: 'Structure by groups' }[l]}</div>
-            <div className={styles.chartSub}>{ { uz: 'Kreditorlik qarzdorligi USD', ru: 'Кредиторская задолженность USD', en: 'Creditors total USD' }[l]}</div>
+            <div className={styles.chartTitle}>{T({ uz: "Guruhlar bo'yicha tuzilma", ru: 'Структура по группам', en: 'Structure by groups' })}</div>
+            <div className={styles.chartSub}>{T({ uz: 'Kreditorlik qarzdorligi UZS', ru: 'Кредиторская задолженность UZS', en: 'Creditors total UZS' })}</div>
           </div>
         </div>
-        <div className={styles.chartEmpty} style={{ height: 220 }}>
-          <span>{ { uz: 'Backend API ulanmoqda...', ru: 'Подключение API...', en: 'Connecting API...' }[l]}</span>
-        </div>
+        {isLoading ? (
+          <div className={styles.emptyRow}><div className={styles.spinner} style={{ margin: '0 auto' }} /></div>
+        ) : groupChart.length === 0 ? (
+          <div className={styles.chartEmpty}><span>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</span></div>
+        ) : (
+          <div style={{ padding: '0 16px 16px' }}>
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={groupChart} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85}>
+                  {groupChart.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Pie>
+                <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ fontSize: '0.72rem' }}>{v}</span>} />
+                <Tooltip formatter={v => fmt(v)} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
 
       <div className={styles.bpFilterBar}>
         <div className={styles.searchWrap}>
           <Search size={14} className={styles.searchIcon} />
           <input className={styles.searchInput}
-            placeholder={ { uz: "Nomi yoki kodi bo'yicha qidirish...", ru: 'Поиск по наименованию или коду', en: 'Search by name or code...' }[l]}
+            placeholder={T({ uz: "Nomi yoki kodi bo'yicha qidirish...", ru: 'Поиск по наименованию или коду...', en: 'Search by name or code...' })}
             value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div className={styles.bpTotal}>
-          { { uz: 'Jami kreditorlik qarzdorligi USD', ru: 'Итого кредиторская задолженность USD', en: 'Total creditors USD' }[l]}
-          <span className={styles.bpTotalValue}>—</span>
+          {T({ uz: 'Jami kreditorlar:', ru: 'Всего кредиторов:', en: 'Total creditors:' })}
+          <span className={styles.bpTotalValue}>{isLoading ? '…' : filtered.length}</span>
         </div>
       </div>
 
       <div className={styles.tableCard}>
+        <div className={styles.tableCardHeader} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className={styles.tableCardTitle}>{T({ uz: "Kreditorlar ro'yxati", ru: 'Список кредиторов', en: 'Creditors list' })}</div>
+          {!isLoading && <span className={styles.rowCount}>{data.length} {T({ uz: 'ta', ru: 'шт.', en: 'items' })}</span>}
+        </div>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead><tr>
-              {COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{c.label[l]}</th>)}
+              <th className={styles.numTh}>#</th>
+              {COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{T(c.label)}</th>)}
             </tr></thead>
             <tbody>
-              <tr><td colSpan={COLS.length} className={styles.emptyRow}>
-                { { uz: 'Backend API ulanmoqda', ru: 'Подключение API...', en: 'Connecting API...' }[l]}
-              </td></tr>
+              {isLoading ? (
+                <tr><td colSpan={COLS.length + 1} className={styles.emptyRow}><div className={styles.spinner} style={{ margin: '0 auto' }} /></td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={COLS.length + 1} className={styles.emptyRow}>{T({ uz: "Ma'lumot topilmadi", ru: 'Данные не найдены', en: 'No data found' })}</td></tr>
+              ) : filtered.map((row, i) => (
+                <tr key={i} className={styles.tr}>
+                  <td className={styles.numTd}>{i + 1}</td>
+                  {COLS.map(c => (
+                    <td key={c.key} className={c.right ? styles.tdR : styles.td}>
+                      {c.right ? fmt(row[c.key]) : (row[c.key] ?? '—')}
+                    </td>
+                  ))}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

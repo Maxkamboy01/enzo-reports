@@ -1,136 +1,220 @@
-import { useState } from 'react';
-import { RefreshCw, Calendar, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+} from 'recharts';
+import { RefreshCw, Calendar, TrendingUp, TrendingDown, ArrowLeftRight } from 'lucide-react';
+import { dashGreymix } from '../../services/apiGreymix';
 import styles from './ModulePage.module.css';
 
-const KPI_CARDS = [
-  { key: 'salesUSD', label: { uz: 'SOTUVLAR USD', ru: 'ПРОДАЖИ USD', en: 'SALES USD' }, icon: DollarSign, color: '#F59E0B' },
-  { key: 'inUSD', label: { uz: 'KIRIM USD', ru: 'ВХОДЯЩИЕ USD', en: 'INCOMING USD' }, icon: TrendingUp, color: '#059669' },
-  { key: 'outUSD', label: { uz: 'CHIQIM USD', ru: 'ИСХОДЯЩИЕ USD', en: 'OUTGOING USD' }, icon: TrendingDown, color: '#DC2626' },
-  { key: 'salesUZS', label: { uz: 'SOTUVLAR UZS', ru: 'ПРОДАЖИ UZS', en: 'SALES UZS' }, icon: DollarSign, color: '#F59E0B' },
-  { key: 'inUZS', label: { uz: 'KIRIM UZS', ru: 'ВХОДЯЩИЕ UZS', en: 'INCOMING UZS' }, icon: TrendingUp, color: '#059669' },
-  { key: 'outUZS', label: { uz: 'CHIQIM UZS', ru: 'ИСХОДЯЩИЕ UZS', en: 'OUTGOING UZS' }, icon: TrendingDown, color: '#DC2626' },
+const L = localStorage.getItem('enzo_lang') || 'uz';
+const lang = ['uz','ru','en'].includes(L) ? L : 'uz';
+const T = o => o[lang] ?? o.uz ?? '';
+
+const fmt = n => n == null || n === '' ? '—' : Math.round(Number(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+const IN_COLS = [
+  { key: 'customerName', label: { uz: 'Xaridor',    ru: 'Покупатель',    en: 'Customer' } },
+  { key: 'cashUZS',      label: { uz: 'Naqd UZS',   ru: 'Нал. UZS',      en: 'Cash UZS' },    right: true },
+  { key: 'transferUZS',  label: { uz: 'O\'tkaz UZS', ru: 'Перевод UZS',   en: 'Transfer UZS' }, right: true },
+  { key: 'totalUZS',     label: { uz: 'Jami UZS',   ru: 'Итого UZS',     en: 'Total UZS' },   right: true },
 ];
 
-const MANAGER_COLS = [
-  { key: 'manager', label: { uz: 'Menejer', ru: 'Менеджер', en: 'Manager' } },
-  { key: 'salesUSD', label: { uz: 'Sotuvlar USD', ru: 'Продажи USD', en: 'Sales USD' }, right: true },
-  { key: 'inUSD', label: { uz: 'Kirim USD', ru: 'Вход. USD', en: 'In USD' }, right: true },
-  { key: 'outUSD', label: { uz: 'Chiqim USD', ru: 'Исход. USD', en: 'Out USD' }, right: true },
-  { key: 'salesUZS', label: { uz: 'Sotuvlar UZS', ru: 'Продажи UZS', en: 'Sales UZS' }, right: true },
-  { key: 'inUZS', label: { uz: 'Kirim UZS', ru: 'Вход. UZS', en: 'In UZS' }, right: true },
-  { key: 'outUZS', label: { uz: 'Chiqim UZS', ru: 'Исход. UZS', en: 'Out UZS' }, right: true },
+const OUT_COLS = [
+  { key: 'vendorName',  label: { uz: 'Yetkazuvchi', ru: 'Поставщик',     en: 'Vendor' } },
+  { key: 'cashUZS',     label: { uz: 'Naqd UZS',    ru: 'Нал. UZS',      en: 'Cash UZS' },    right: true },
+  { key: 'transferUZS', label: { uz: 'O\'tkaz UZS', ru: 'Перевод UZS',   en: 'Transfer UZS' }, right: true },
+  { key: 'totalUZS',    label: { uz: 'Jami UZS',    ru: 'Итого UZS',     en: 'Total UZS' },   right: true },
 ];
 
 export default function CashFlowPage() {
-  const lang = localStorage.getItem('enzo_lang') || 'uz';
-  const l = ['uz','ru','en'].includes(lang) ? lang : 'uz';
   const today = new Date().toISOString().slice(0, 10);
   const [dateFrom, setDateFrom] = useState(today);
-  const [dateTo, setDateTo] = useState(today);
+  const [dateTo,   setDateTo]   = useState(today);
+
+  const { data: incoming = [], isLoading: loadIn, isFetching: fetchIn, refetch: refetchIn } = useQuery({
+    queryKey: ['greymix-incoming-payment', dateFrom, dateTo],
+    queryFn: () => dashGreymix.incomingPayment({ dateFrom, dateTo }),
+    staleTime: 60000,
+  });
+
+  const { data: outgoing = [], isLoading: loadOut, refetch: refetchOut } = useQuery({
+    queryKey: ['greymix-outgoing-payment', dateFrom, dateTo],
+    queryFn: () => dashGreymix.outgoingPayment({ dateFrom, dateTo }),
+    staleTime: 60000,
+  });
+
+  const isFetching = fetchIn;
+  const refetch = () => { refetchIn(); refetchOut(); };
+  const isLoading = loadIn || loadOut;
+
+  const totalIn  = useMemo(() => incoming.reduce((s, r) => s + (Number(r.totalUZS) || 0), 0), [incoming]);
+  const totalOut = useMemo(() => outgoing.reduce((s, r) => s + (Number(r.totalUZS) || 0), 0), [outgoing]);
+  const saldo    = totalIn - totalOut;
+
+  const chartData = useMemo(() => {
+    const top = Math.max(incoming.length, outgoing.length);
+    const rows = [];
+    for (let i = 0; i < Math.min(top, 10); i++) {
+      rows.push({
+        name: (incoming[i]?.customerName ?? outgoing[i]?.vendorName ?? `#${i + 1}`).slice(0, 20),
+        in:  Number(incoming[i]?.totalUZS) || 0,
+        out: Number(outgoing[i]?.totalUZS) || 0,
+      });
+    }
+    return rows;
+  }, [incoming, outgoing]);
+
+  const Loading = () => (
+    <div className={styles.emptyRow}><div className={styles.spinner} style={{ margin: '0 auto' }} /></div>
+  );
 
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>{ { uz: 'Pul oqimlari', ru: 'Денежные потоки', en: 'Cash Flow' }[l]}</h1>
-          <p className={styles.pageSub}>{ { uz: "Menejerlar bo'yicha kirim va chiqim", ru: 'Входящие / Исходящие по менеджерам', en: 'Incoming & outgoing by managers' }[l]}</p>
+          <h1 className={styles.pageTitle}>{T({ uz: 'Pul oqimlari', ru: 'Денежные потоки', en: 'Cash Flow' })}</h1>
+          <p className={styles.pageSub}>{T({ uz: "Kirim va chiqim to'lovlar UZS", ru: 'Входящие / Исходящие платежи UZS', en: 'Incoming & outgoing payments UZS' })}</p>
         </div>
         <div className={styles.headerControls}>
           <div className={styles.dateRange}>
             <Calendar size={13} className={styles.calIcon} />
             <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className={styles.dateInput} />
             <span className={styles.dateSep}>—</span>
-            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className={styles.dateInput} />
+            <input type="date" value={dateTo}   onChange={e => setDateTo(e.target.value)}   className={styles.dateInput} />
           </div>
-          <button className={styles.refreshBtn}><RefreshCw size={13} /></button>
+          <button className={styles.refreshBtn} onClick={refetch} disabled={isFetching}>
+            <RefreshCw size={13} className={isFetching ? styles.spin : ''} />
+          </button>
         </div>
       </div>
 
-      <div className={styles.statsGrid6}>
-        {KPI_CARDS.map(c => {
-          const Icon = c.icon;
-          return (
-            <div key={c.key} className={styles.statCard}>
-              <div className={styles.statLabel} style={{ borderLeftColor: c.color }}>{c.label[l]}</div>
-              <div className={styles.statValue}>—</div>
-              <div className={styles.statIcon} style={{ background: c.color + '18', color: c.color }}><Icon size={18} /></div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className={styles.chartsRow}>
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <span className={styles.chartAccent} style={{ background: '#059669' }} />
-            <div>
-              <div className={styles.chartTitle}>{ { uz: 'Kirim va Chiqim · USD', ru: 'Входящие vs Исходящие · USD', en: 'Incoming vs Outgoing · USD' }[l]}</div>
-              <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
-            </div>
-          </div>
-          <div className={styles.chartEmpty}>
-            <span>{ { uz: 'Backend API ulanmoqda...', ru: 'Подключение API...', en: 'Connecting API...' }[l]}</span>
-          </div>
+      <div className={styles.statsGrid}>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel} style={{ borderLeftColor: '#059669' }}>{T({ uz: 'KIRIM UZS', ru: 'ВХОДЯЩИЕ UZS', en: 'INCOMING UZS' })}</div>
+          <div className={styles.statValue}>{isLoading ? '...' : fmt(totalIn)}</div>
+          <div className={styles.statIcon} style={{ background: '#05966918', color: '#059669' }}><TrendingUp size={20} /></div>
         </div>
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <span className={styles.chartAccent} style={{ background: '#F59E0B' }} />
-            <div>
-              <div className={styles.chartTitle}>{ { uz: 'Sotuvlar · USD', ru: 'Продажи · USD', en: 'Sales · USD' }[l]}</div>
-              <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
-            </div>
-          </div>
-          <div className={styles.chartEmpty}>
-            <span>{ { uz: 'Backend API ulanmoqda...', ru: 'Подключение API...', en: 'Connecting API...' }[l]}</span>
-          </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel} style={{ borderLeftColor: '#DC2626' }}>{T({ uz: 'CHIQIM UZS', ru: 'ИСХОДЯЩИЕ UZS', en: 'OUTGOING UZS' })}</div>
+          <div className={styles.statValue}>{isLoading ? '...' : fmt(totalOut)}</div>
+          <div className={styles.statIcon} style={{ background: '#DC262618', color: '#DC2626' }}><TrendingDown size={20} /></div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel} style={{ borderLeftColor: saldo >= 0 ? '#059669' : '#DC2626' }}>{T({ uz: 'SALDO UZS', ru: 'САЛЬДО UZS', en: 'BALANCE UZS' })}</div>
+          <div className={styles.statValue} style={{ color: saldo >= 0 ? '#059669' : '#DC2626' }}>{isLoading ? '...' : fmt(saldo)}</div>
+          <div className={styles.statIcon} style={{ background: '#0D948818', color: '#0D9488' }}><ArrowLeftRight size={20} /></div>
         </div>
       </div>
 
-      <div className={styles.chartsRow}>
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <span className={styles.chartAccent} style={{ background: '#059669' }} />
-            <div>
-              <div className={styles.chartTitle}>{ { uz: 'Kirim va Chiqim · UZS', ru: 'Входящие vs Исходящие · UZS', en: 'Incoming vs Outgoing · UZS' }[l]}</div>
-              <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
-            </div>
-          </div>
-          <div className={styles.chartEmpty}>
-            <span>{ { uz: 'Backend API ulanmoqda...', ru: 'Подключение API...', en: 'Connecting API...' }[l]}</span>
-          </div>
-        </div>
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <span className={styles.chartAccent} style={{ background: '#F59E0B' }} />
-            <div>
-              <div className={styles.chartTitle}>{ { uz: 'Sotuvlar · UZS', ru: 'Продажи · UZS', en: 'Sales · UZS' }[l]}</div>
-              <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
-            </div>
-          </div>
-          <div className={styles.chartEmpty}>
-            <span>{ { uz: 'Backend API ulanmoqda...', ru: 'Подключение API...', en: 'Connecting API...' }[l]}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.tableCard}>
-        <div className={styles.tableCardHeader}>
+      <div className={styles.chartCard}>
+        <div className={styles.chartHeader}>
+          <span className={styles.chartAccent} style={{ background: '#059669' }} />
           <div>
-            <div className={styles.tableCardTitle}>{ { uz: "Menejerlar bo'yicha tahlil", ru: 'Детализация по менеджерам', en: 'Manager breakdown' }[l]}</div>
-            <div className={styles.tableCardSub}>{dateFrom} — {dateTo}</div>
+            <div className={styles.chartTitle}>{T({ uz: 'Kirim vs Chiqim · UZS', ru: 'Входящие vs Исходящие · UZS', en: 'Incoming vs Outgoing · UZS' })}</div>
+            <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
           </div>
         </div>
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead><tr>
-              {MANAGER_COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{c.label[l]}</th>)}
-            </tr></thead>
-            <tbody>
-              <tr><td colSpan={MANAGER_COLS.length} className={styles.emptyRow}>
-                { { uz: 'Backend API ulanmoqda', ru: 'Подключение API...', en: 'Connecting API...' }[l]}
-              </td></tr>
-            </tbody>
-          </table>
+        {isLoading ? <Loading /> : chartData.length === 0 ? (
+          <div className={styles.chartEmpty}><span>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</span></div>
+        ) : (
+          <div style={{ padding: '0 16px 16px' }}>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={chartData} margin={{ left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+                <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1e9 ? (v/1e9).toFixed(1)+'B' : v >= 1e6 ? (v/1e6).toFixed(0)+'M' : v} />
+                <Tooltip formatter={v => fmt(v)} />
+                <Legend iconType="circle" iconSize={8} />
+                <Bar dataKey="in"  name={T({ uz: 'Kirim', ru: 'Входящие', en: 'Incoming' })} fill="#059669" radius={[3,3,0,0]} />
+                <Bar dataKey="out" name={T({ uz: 'Chiqim', ru: 'Исходящие', en: 'Outgoing' })} fill="#DC2626" radius={[3,3,0,0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+
+      <div className={styles.chartsRow}>
+        <div className={styles.tableCard}>
+          <div className={styles.tableCardHeader} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className={styles.tableCardTitle} style={{ color: '#059669' }}>{T({ uz: 'Kirim to\'lovlar', ru: 'Входящие платежи', en: 'Incoming payments' })}</div>
+            {!loadIn && <span className={styles.rowCount}>{incoming.length}</span>}
+          </div>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead><tr>
+                <th className={styles.numTh}>#</th>
+                {IN_COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{T(c.label)}</th>)}
+              </tr></thead>
+              <tbody>
+                {loadIn ? (
+                  <tr><td colSpan={IN_COLS.length + 1}><Loading /></td></tr>
+                ) : incoming.length === 0 ? (
+                  <tr><td colSpan={IN_COLS.length + 1} className={styles.emptyRow}>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</td></tr>
+                ) : incoming.map((row, i) => (
+                  <tr key={i} className={styles.tr}>
+                    <td className={styles.numTd}>{i + 1}</td>
+                    {IN_COLS.map(c => (
+                      <td key={c.key} className={c.right ? styles.tdR : styles.td}>
+                        {c.right ? fmt(row[c.key]) : (row[c.key] ?? '—')}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+              {incoming.length > 0 && (
+                <tfoot>
+                  <tr className={styles.totalRow}>
+                    <td colSpan={2} className={styles.td}>{T({ uz: 'JAMI', ru: 'ИТОГО', en: 'TOTAL' })}</td>
+                    <td className={styles.tdR}>{fmt(incoming.reduce((s,r) => s+(Number(r.cashUZS)||0),0))}</td>
+                    <td className={styles.tdR}>{fmt(incoming.reduce((s,r) => s+(Number(r.transferUZS)||0),0))}</td>
+                    <td className={styles.tdR}>{fmt(totalIn)}</td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+        </div>
+
+        <div className={styles.tableCard}>
+          <div className={styles.tableCardHeader} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className={styles.tableCardTitle} style={{ color: '#DC2626' }}>{T({ uz: "Chiqim to'lovlar", ru: 'Исходящие платежи', en: 'Outgoing payments' })}</div>
+            {!loadOut && <span className={styles.rowCount}>{outgoing.length}</span>}
+          </div>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead><tr>
+                <th className={styles.numTh}>#</th>
+                {OUT_COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{T(c.label)}</th>)}
+              </tr></thead>
+              <tbody>
+                {loadOut ? (
+                  <tr><td colSpan={OUT_COLS.length + 1}><Loading /></td></tr>
+                ) : outgoing.length === 0 ? (
+                  <tr><td colSpan={OUT_COLS.length + 1} className={styles.emptyRow}>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</td></tr>
+                ) : outgoing.map((row, i) => (
+                  <tr key={i} className={styles.tr}>
+                    <td className={styles.numTd}>{i + 1}</td>
+                    {OUT_COLS.map(c => (
+                      <td key={c.key} className={c.right ? styles.tdR : styles.td}>
+                        {c.right ? fmt(row[c.key]) : (row[c.key] ?? '—')}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+              {outgoing.length > 0 && (
+                <tfoot>
+                  <tr className={styles.totalRow}>
+                    <td colSpan={2} className={styles.td}>{T({ uz: 'JAMI', ru: 'ИТОГО', en: 'TOTAL' })}</td>
+                    <td className={styles.tdR}>{fmt(outgoing.reduce((s,r) => s+(Number(r.cashUZS)||0),0))}</td>
+                    <td className={styles.tdR}>{fmt(outgoing.reduce((s,r) => s+(Number(r.transferUZS)||0),0))}</td>
+                    <td className={styles.tdR}>{fmt(totalOut)}</td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
         </div>
       </div>
     </div>
