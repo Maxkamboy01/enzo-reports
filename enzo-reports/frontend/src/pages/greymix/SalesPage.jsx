@@ -1,149 +1,224 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
+} from 'recharts';
 import { TrendingUp, RefreshCw, Calendar, Users, FileText, DollarSign } from 'lucide-react';
+import { dashGreymix } from '../../services/apiGreymix';
 import styles from './ModulePage.module.css';
 
+const L = localStorage.getItem('enzo_lang') || 'uz';
+const lang = ['uz','ru','en'].includes(L) ? L : 'uz';
+
 const PERIODS = [
-  { id: 'day', uz: 'Kun', ru: 'День', en: 'Day' },
-  { id: 'week', uz: 'Hafta', ru: 'Неделя', en: 'Week' },
-  { id: 'month', uz: 'Oy', ru: 'Месяц', en: 'Month' },
+  { id: 'day',   label: { uz: 'Kun',   ru: 'День',    en: 'Day' } },
+  { id: 'week',  label: { uz: 'Hafta', ru: 'Неделя',  en: 'Week' } },
+  { id: 'month', label: { uz: 'Oy',    ru: 'Месяц',   en: 'Month' } },
 ];
 
-const STAT_CARDS = [
-  { key: 'totalUSD', label: { uz: 'JAMI SOTUVLAR USD', ru: 'ИТОГО ПРОДАЖИ USD', en: 'TOTAL SALES USD' }, icon: DollarSign, color: '#059669', prefix: '$' },
-  { key: 'totalUZS', label: { uz: 'JAMI SOTUVLAR UZS', ru: 'ИТОГО ПРОДАЖИ UZS', en: 'TOTAL SALES UZS' }, icon: TrendingUp, color: '#0891B2', prefix: '' },
-  { key: 'invoices', label: { uz: 'HUJJATLAR', ru: 'НАКЛАДНЫХ', en: 'DOCUMENTS' }, icon: FileText, color: '#7C3AED', prefix: '' },
-  { key: 'managers', label: { uz: 'MENEJERLAR', ru: 'МЕНЕДЖЕРОВ', en: 'MANAGERS' }, icon: Users, color: '#F59E0B', prefix: '' },
-];
+const COLORS = ['#1B3A8C','#059669','#D97706','#DC2626','#7C3AED','#0891B2','#F59E0B','#0D9488'];
 
-const MANAGER_COLS = [
-  { key: 'manager', label: { uz: 'Menejer', ru: 'Менеджер', en: 'Manager' } },
-  { key: 'totalUSD', label: { uz: 'Summa USD', ru: 'Сумма USD', en: 'Amount USD' }, right: true },
-  { key: 'totalUZS', label: { uz: 'Summa UZS', ru: 'Сумма UZS', en: 'Amount UZS' }, right: true },
-  { key: 'invoiceCount', label: { uz: 'Hujjatlar', ru: 'Накладных', en: 'Documents' }, right: true },
-];
+const fmt = (n, prefix = '') =>
+  n == null || n === '' ? '—' : prefix + Number(n).toLocaleString('ru-RU', { maximumFractionDigits: 0 });
+
+const fmtDate = d => d ? String(d).slice(0, 10) : '';
+
+const T = (obj) => obj[lang] ?? obj.uz ?? '';
 
 export default function SalesPage() {
-  const lang = localStorage.getItem('enzo_lang') || 'uz';
-  const l = ['uz','ru','en'].includes(lang) ? lang : 'uz';
   const today = new Date().toISOString().slice(0, 10);
   const [dateFrom, setDateFrom] = useState(today);
-  const [dateTo, setDateTo] = useState(today);
-  const [period, setPeriod] = useState('day');
+  const [dateTo,   setDateTo]   = useState(today);
+  const [period,   setPeriod]   = useState('day');
 
-  const title = { uz: 'Sotuvlar', ru: 'Продажи', en: 'Sales' }[l];
-  const sub = { uz: "Menejerlar bo'yicha savdo hisoboti", ru: 'Отчёт менеджеров по продажам', en: 'Sales report by managers' }[l];
+  const { data: raw, isLoading, isFetching, refetch } = useQuery({
+    queryKey: ['greymix-sales-overview', dateFrom, dateTo, period],
+    queryFn: () => dashGreymix.salesOverview({ dateFrom, dateTo, period }),
+    staleTime: 60000,
+  });
+
+  // Flexibly extract sub-arrays from various possible response shapes
+  const managers = useMemo(() => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    const d = raw.data ?? raw;
+    if (Array.isArray(d)) return d;
+    return Array.isArray(d.managers) ? d.managers
+         : Array.isArray(d.managerData) ? d.managerData
+         : [];
+  }, [raw]);
+
+  const chartData = useMemo(() => {
+    if (!raw) return [];
+    const d = raw.data ?? raw;
+    return Array.isArray(d.chartData) ? d.chartData
+         : Array.isArray(d.chart) ? d.chart
+         : Array.isArray(d.dailyData) ? d.dailyData
+         : [];
+  }, [raw]);
+
+  const totals = useMemo(() => {
+    if (!raw) return {};
+    const d = raw.data ?? raw;
+    return d.totals ?? d.summary ?? d.kpi ?? {};
+  }, [raw]);
+
+  const totalUSD = totals.salesUSD ?? totals.totalUSD ?? totals.totalSalesUSD ?? managers.reduce((s, m) => s + (Number(m.totalUSD) || 0), 0) || null;
+  const totalUZS = totals.salesUZS ?? totals.totalUZS ?? totals.totalSalesUZS ?? managers.reduce((s, m) => s + (Number(m.totalUZS) || 0), 0) || null;
+  const invoiceCount = totals.invoiceCount ?? totals.invoices ?? managers.reduce((s, m) => s + (Number(m.invoiceCount) || 0), 0) || null;
+  const managerCount = totals.managerCount ?? totals.managers ?? managers.length || null;
+
+  const STAT_CARDS = [
+    { key: 'totalUSD',   value: fmt(totalUSD, '$'),  label: T({ uz: 'JAMI SOTUVLAR USD', ru: 'ИТОГО ПРОДАЖИ USD', en: 'TOTAL SALES USD' }),   icon: DollarSign, color: '#059669' },
+    { key: 'totalUZS',   value: fmt(totalUZS),       label: T({ uz: 'JAMI SOTUVLAR UZS', ru: 'ИТОГО ПРОДАЖИ UZS', en: 'TOTAL SALES UZS' }),   icon: TrendingUp, color: '#0891B2' },
+    { key: 'invoices',   value: fmt(invoiceCount),   label: T({ uz: 'HUJJATLAR',          ru: 'НАКЛАДНЫХ',          en: 'DOCUMENTS' }),          icon: FileText,   color: '#7C3AED' },
+    { key: 'managers',   value: fmt(managerCount),   label: T({ uz: 'MENEJERLAR',         ru: 'МЕНЕДЖЕРОВ',         en: 'MANAGERS' }),           icon: Users,      color: '#F59E0B' },
+  ];
+
+  const COLS = [
+    { key: 'manager',      label: T({ uz: 'Menejer',        ru: 'Менеджер',     en: 'Manager' }),      right: false },
+    { key: 'totalUSD',     label: T({ uz: 'Summa USD',      ru: 'Сумма USD',    en: 'Amount USD' }),   right: true,  prefix: '$' },
+    { key: 'totalUZS',     label: T({ uz: 'Summa UZS',      ru: 'Сумма UZS',    en: 'Amount UZS' }),   right: true },
+    { key: 'invoiceCount', label: T({ uz: 'Hujjatlar',      ru: 'Накладных',    en: 'Documents' }),    right: true },
+  ];
+
+  const hasChart  = chartData.length > 0;
+  const hasMgrs   = managers.length > 0;
+
+  const Loading = () => (
+    <div className={styles.emptyRow} style={{ padding: '40px 20px' }}>
+      <div className={styles.spinner} style={{ margin: '0 auto' }} />
+    </div>
+  );
 
   return (
     <div className={styles.page}>
+      {/* Header */}
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>{title}</h1>
-          <p className={styles.pageSub}>{sub}</p>
+          <h1 className={styles.pageTitle}>{T({ uz: 'Sotuvlar', ru: 'Продажи', en: 'Sales' })}</h1>
+          <p className={styles.pageSub}>{T({ uz: "Menejerlar bo'yicha savdo hisoboti", ru: 'Отчёт менеджеров по продажам', en: 'Sales report by managers' })}</p>
         </div>
         <div className={styles.headerControls}>
           <div className={styles.dateRange}>
             <Calendar size={13} className={styles.calIcon} />
             <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className={styles.dateInput} />
             <span className={styles.dateSep}>—</span>
-            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className={styles.dateInput} />
+            <input type="date" value={dateTo}   onChange={e => setDateTo(e.target.value)}   className={styles.dateInput} />
           </div>
           <div className={styles.periodTabs}>
             {PERIODS.map(p => (
-              <button key={p.id} className={`${styles.periodBtn} ${period === p.id ? styles.periodActive : ''}`}
-                onClick={() => setPeriod(p.id)}>{p[l]}</button>
+              <button key={p.id}
+                className={`${styles.periodBtn} ${period === p.id ? styles.periodActive : ''}`}
+                onClick={() => setPeriod(p.id)}>{p.label[lang]}</button>
             ))}
           </div>
-          <button className={styles.refreshBtn}><RefreshCw size={13} /></button>
+          <button className={styles.refreshBtn} onClick={() => refetch()} disabled={isFetching}>
+            <RefreshCw size={13} className={isFetching ? styles.spin : ''} />
+          </button>
         </div>
       </div>
 
+      {/* KPI Cards */}
       <div className={styles.statsGrid}>
         {STAT_CARDS.map(c => {
           const Icon = c.icon;
           return (
             <div key={c.key} className={styles.statCard}>
-              <div className={styles.statLabel} style={{ borderLeftColor: c.color }}>{c.label[l]}</div>
-              <div className={styles.statValue}>—</div>
-              <div className={styles.statIcon} style={{ background: c.color + '18', color: c.color }}>
-                <Icon size={20} />
-              </div>
+              <div className={styles.statLabel} style={{ borderLeftColor: c.color }}>{c.label}</div>
+              <div className={styles.statValue}>{isLoading ? '...' : c.value}</div>
+              <div className={styles.statIcon} style={{ background: c.color + '18', color: c.color }}><Icon size={20} /></div>
             </div>
           );
         })}
       </div>
 
+      {/* Charts row */}
       <div className={styles.chartsRow}>
+        {/* Daily line chart — UZS */}
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
             <span className={styles.chartAccent} style={{ background: '#059669' }} />
             <div>
-              <div className={styles.chartTitle}>{ { uz: 'Sotuvlar USD', ru: 'Продажи USD', en: 'Sales USD' }[l]}</div>
+              <div className={styles.chartTitle}>{T({ uz: 'Sotuvlar UZS', ru: 'Продажи UZS', en: 'Sales UZS' })}</div>
               <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
             </div>
           </div>
-          <div className={styles.chartEmpty}>
-            <span>{ { uz: 'Backend API ulanmoqda...', ru: 'Подключение API...', en: 'Connecting API...' }[l]}</span>
-          </div>
-        </div>
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <span className={styles.chartAccent} style={{ background: '#059669' }} />
-            <div>
-              <div className={styles.chartTitle}>{ { uz: 'Sotuvlar UZS', ru: 'Продажи UZS', en: 'Sales UZS' }[l]}</div>
-              <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
+          {isLoading ? <Loading /> : !hasChart ? (
+            <div className={styles.chartEmpty}><span>{T({ uz: 'Ma\'lumot yo\'q', ru: 'Нет данных', en: 'No data' })}</span></div>
+          ) : (
+            <div style={{ padding: '0 16px 16px' }}>
+              <ResponsiveContainer width="100%" height={180}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={fmtDate} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e3 ? (v/1e3).toFixed(0)+'K' : v} />
+                  <Tooltip formatter={(v) => fmt(v)} labelFormatter={fmtDate} />
+                  <Line type="monotone" dataKey="totalUZS" stroke="#059669" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-          <div className={styles.chartEmpty}>
-            <span>{ { uz: 'Backend API ulanmoqda...', ru: 'Подключение API...', en: 'Connecting API...' }[l]}</span>
-          </div>
+          )}
         </div>
-      </div>
 
-      <div className={styles.chartsRow}>
+        {/* Manager donut */}
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
             <span className={styles.chartAccent} style={{ background: '#1B3A8C' }} />
             <div>
-              <div className={styles.chartTitle}>{ { uz: 'Menejerlar ulushi · USD', ru: 'Доля менеджеров · USD', en: 'Manager share · USD' }[l]}</div>
+              <div className={styles.chartTitle}>{T({ uz: "Menejerlar ulushi · UZS", ru: 'Доля менеджеров · UZS', en: 'Manager share · UZS' })}</div>
               <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
             </div>
           </div>
-          <div className={styles.chartEmpty}>
-            <span>{ { uz: 'Backend API ulanmoqda...', ru: 'Подключение API...', en: 'Connecting API...' }[l]}</span>
-          </div>
-        </div>
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <span className={styles.chartAccent} style={{ background: '#1B3A8C' }} />
-            <div>
-              <div className={styles.chartTitle}>{ { uz: 'Menejerlar ulushi · UZS', ru: 'Доля менеджеров · UZS', en: 'Manager share · UZS' }[l]}</div>
-              <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
+          {isLoading ? <Loading /> : !hasMgrs ? (
+            <div className={styles.chartEmpty}><span>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</span></div>
+          ) : (
+            <div style={{ padding: '0 16px 16px' }}>
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie data={managers} dataKey="totalUZS" nameKey="manager" innerRadius={50} outerRadius={80}>
+                    {managers.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ fontSize: '0.72rem' }}>{v}</span>} />
+                  <Tooltip formatter={v => fmt(v)} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-          <div className={styles.chartEmpty}>
-            <span>{ { uz: 'Backend API ulanmoqda...', ru: 'Подключение API...', en: 'Connecting API...' }[l]}</span>
-          </div>
+          )}
         </div>
       </div>
 
+      {/* Manager table */}
       <div className={styles.tableCard}>
         <div className={styles.tableCardHeader}>
           <div>
-            <div className={styles.tableCardTitle}>{ { uz: "Menejerlar bo'yicha hisobot", ru: 'Отчёт по менеджерам', en: 'Manager report' }[l]}</div>
+            <div className={styles.tableCardTitle}>{T({ uz: "Menejerlar bo'yicha hisobot", ru: 'Отчёт по менеджерам', en: 'Manager report' })}</div>
             <div className={styles.tableCardSub}>{dateFrom} — {dateTo}</div>
           </div>
+          {hasMgrs && <span className={styles.rowCount}>{managers.length} {T({ uz: 'menejer', ru: 'менеджеров', en: 'managers' })}</span>}
         </div>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead><tr>
-              {MANAGER_COLS.map(c => (
-                <th key={c.key} className={c.right ? styles.thR : styles.th}>{c.label[l]}</th>
-              ))}
+              <th className={styles.numTh}>#</th>
+              {COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{c.label}</th>)}
             </tr></thead>
             <tbody>
-              <tr><td colSpan={MANAGER_COLS.length} className={styles.emptyRow}>
-                { { uz: 'Backend API ulanmoqda', ru: 'Подключение API...', en: 'Connecting API...' }[l]}
-              </td></tr>
+              {isLoading ? (
+                <tr><td colSpan={COLS.length + 1}><Loading /></td></tr>
+              ) : !hasMgrs ? (
+                <tr><td colSpan={COLS.length + 1} className={styles.emptyRow}>{T({ uz: "Ma'lumot topilmadi", ru: 'Данные не найдены', en: 'No data found' })}</td></tr>
+              ) : managers.map((row, i) => (
+                <tr key={i} className={styles.tr}>
+                  <td className={styles.numTd}>{i + 1}</td>
+                  {COLS.map(c => (
+                    <td key={c.key} className={c.right ? styles.tdR : styles.td}>
+                      {c.prefix ? fmt(row[c.key], c.prefix) : (row[c.key] ?? '—')}
+                    </td>
+                  ))}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

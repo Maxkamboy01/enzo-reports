@@ -166,6 +166,7 @@
 
 .td, .tdR { padding: 9px 12px; color: var(--grey-800); vertical-align: middle; }
 .tdR { text-align: right; font-variant-numeric: tabular-nums; }
+.numTd { padding: 9px 12px; text-align: center; color: var(--grey-400); font-size: 0.72rem; }
 
 .emptyRow {
   text-align: center; padding: 48px 20px;
@@ -173,6 +174,28 @@
 }
 
 .totalRow { background: var(--grey-50); border-top: 2px solid var(--grey-300); font-weight: 700; }
+
+.rowCount {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 10px; border-radius: var(--radius-full);
+  background: var(--grey-100); color: var(--grey-600);
+  font-size: 0.72rem; font-weight: 600;
+}
+
+.stockBadge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 40px; padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem; font-weight: 700;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.7s linear infinite; }
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--grey-300); border-top-color: var(--primary);
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
 
 /* Filter bars */
 .filterBarSimple {
