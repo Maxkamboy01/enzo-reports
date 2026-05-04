@@ -20,7 +20,11 @@ const COLORS = [
   '#0891B2','#F59E0B','#0D9488','#64748B','#EC4899',
 ];
 
-export default function ProductCostPage() {
+export default function ProductCostPage({
+  costFetcher = dashGreymix.productCostStructure,
+  priceFetcher = dashGreymix.productCostSummary,
+  queryKey = 'shifer',
+}) {
   const firstOfYear = new Date().getFullYear() + '-01-01';
   const today = new Date().toISOString().slice(0, 10);
 
@@ -33,15 +37,15 @@ export default function ProductCostPage() {
   const enabled = !!itemCode;
 
   const { data: structure = [], isLoading: loadStr, isFetching: fetchStr, refetch: refetchStr } = useQuery({
-    queryKey: ['product-cost-structure', itemCode, dateFrom, dateTo],
-    queryFn: () => dashGreymix.productCostStructure({ itemCode, dateFrom, dateTo }),
+    queryKey: [`${queryKey}-product-cost-structure`, itemCode, dateFrom, dateTo],
+    queryFn: () => costFetcher({ itemCode, dateFrom, dateTo }),
     enabled,
     staleTime: 60000,
   });
 
   const { data: summary = {}, isLoading: loadSum, refetch: refetchSum } = useQuery({
-    queryKey: ['product-cost-summary', itemCode, dateFrom, dateTo],
-    queryFn: () => dashGreymix.productCostSummary({ itemCode, dateFrom, dateTo }),
+    queryKey: [`${queryKey}-product-cost-summary`, itemCode, dateFrom, dateTo],
+    queryFn: () => priceFetcher({ itemCode, dateFrom, dateTo }),
     enabled,
     staleTime: 60000,
   });

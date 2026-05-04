@@ -6,6 +6,7 @@ import AppLayout from './components/layout/AppLayout';
 import ModuleLayout from './components/layout/ModuleLayout';
 import { dashShifer } from './services/apiShifer';
 import { dashJbi } from './services/apiJbi';
+import { dash } from './services/api';
 
 import Login from './pages/Login';
 import ModulesHub from './pages/ModulesHub';
@@ -152,6 +153,8 @@ export default function App() {
 
               <Route path="/inventory-transfer" element={<DBRoute db="cement"><InventoryTransfer /></DBRoute>} />
 
+              <Route path="/product-cost" element={<DBRoute db="cement"><ProductCostPage costFetcher={dash.productCostStructure} priceFetcher={dash.productCostSummary} queryKey="cement" /></DBRoute>} />
+
               {/* ── Shifer routes ── */}
               <Route path="/shifer/production-performance" element={<DBRoute db="shifer"><ShiferProductionPerformance /></DBRoute>} />
               <Route path="/shifer/issue-materials"        element={<DBRoute db="shifer"><ShiferIssueItemMetaterials /></DBRoute>} />
@@ -184,6 +187,8 @@ export default function App() {
 
               <Route path="/shifer/inventory-transfer" element={<DBRoute db="shifer"><InventoryTransfer fetcher={dashShifer.inventoryTransfer} queryKey="shifer-inventory-transfer" /></DBRoute>} />
 
+              <Route path="/shifer/product-cost" element={<DBRoute db="shifer"><ProductCostPage costFetcher={dashShifer.productCostStructure} priceFetcher={dashShifer.productCostSummary} queryKey="shifer" /></DBRoute>} />
+
               {/* ── JBI routes ── */}
               <Route path="/jbi/mill-production" element={<DBRoute db="jbi"><MillProduction fetcher={dashJbi.millProduction} queryKey="jbi-mill-production" /></DBRoute>} />
               <Route path="/jbi/volume-daily"    element={<DBRoute db="jbi"><VolumeDaily    fetcher={dashJbi.volumeDaily}    queryKey="jbi-volume-daily" /></DBRoute>} />
@@ -206,6 +211,8 @@ export default function App() {
               <Route path="/jbi/cost-trend-monthly" element={<DBRoute db="jbi"><CostTrendMonthly fetcher={dashJbi.costTrendMonthly} queryKey="jbi-cost-trend-monthly" /></DBRoute>} />
 
               <Route path="/jbi/inventory-transfer" element={<DBRoute db="jbi"><InventoryTransfer fetcher={dashJbi.inventoryTransfer} queryKey="jbi-inventory-transfer" /></DBRoute>} />
+
+              <Route path="/jbi/product-cost" element={<DBRoute db="jbi"><ProductCostPage costFetcher={dashJbi.productCostStructure} priceFetcher={dashJbi.productCostSummary} queryKey="jbi" /></DBRoute>} />
 
             </Route>
 

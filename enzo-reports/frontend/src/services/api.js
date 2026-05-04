@@ -67,6 +67,10 @@ export const dash = {
 
   // Inventory
   inventoryTransfer:         list('/api/dashboard/inventory-transfer-request'),
+
+  // Product cost (DashboardControllerM)
+  productCostStructure: p => api.get('/api/dashboardcontrollerm/cost-structures', { params: p }).then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; }),
+  productCostSummary:   p => api.get('/api/dashboardcontrollerm/avar-cost-price', { params: p }).then(r => { const v = r.data?.data ?? r.data; return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }),
 };
 
 export const fmt = n => {
