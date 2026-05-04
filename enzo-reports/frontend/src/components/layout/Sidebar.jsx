@@ -323,6 +323,14 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
           </button>
         </div>
 
+        {/* Back to Modules */}
+        <div className={styles.backToHub}>
+          <Link to="/hub" className={styles.backToHubBtn} title="Modules / Modullar" onClick={onMobileClose}>
+            <ChevronRight size={12} style={{ transform: 'rotate(180deg)' }} />
+            {!collapsed && <span>{t('nav.back_to_hub')}</span>}
+          </Link>
+        </div>
+
         {/* Nav */}
         <nav className={styles.nav}>
           {visibleSections.map(s =>

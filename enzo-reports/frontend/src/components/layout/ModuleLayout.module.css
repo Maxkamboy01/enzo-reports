@@ -1,0 +1,69 @@
+.layout { min-height: 100vh; display: flex; flex-direction: column; background: #F0F2F5; }
+
+.header {
+  position: sticky; top: 0; z-index: 10;
+  background: #fff;
+  border-bottom: 1px solid var(--grey-300);
+  height: 56px;
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
+
+.backBtn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--grey-300);
+  background: #fff;
+  color: var(--grey-700);
+  font-size: 0.82rem; font-weight: 600;
+  transition: var(--t-fast);
+}
+.backBtn:hover { background: var(--grey-100); color: var(--grey-900); }
+
+.headerRight { display: flex; align-items: center; gap: 8px; }
+
+.iconBtn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--grey-300);
+  background: #fff; color: var(--grey-600);
+  transition: var(--t-fast);
+}
+.iconBtn:hover { background: var(--grey-100); }
+
+.userPill {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 10px 4px 4px;
+  background: var(--grey-100);
+  border-radius: var(--radius-full);
+}
+
+.avatar {
+  width: 24px; height: 24px;
+  background: var(--primary); color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700;
+}
+
+.userName { font-size: 0.78rem; font-weight: 600; color: var(--grey-700); }
+
+.logoutBtn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--grey-300);
+  background: #fff; color: var(--grey-600);
+  transition: var(--t-fast);
+}
+.logoutBtn:hover { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+
+.content { flex: 1; padding: 24px; max-width: 1400px; width: 100%; margin: 0 auto; }
+
+@media (max-width: 560px) {
+  .content { padding: 16px; }
+  .userName { display: none; }
+}

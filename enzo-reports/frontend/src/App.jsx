@@ -3,10 +3,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth, DB_META } from './context/AuthContext';
 import { I18nProvider } from './context/I18nContext';
 import AppLayout from './components/layout/AppLayout';
+import ModuleLayout from './components/layout/ModuleLayout';
 import { dashShifer } from './services/apiShifer';
 import { dashJbi } from './services/apiJbi';
 
 import Login from './pages/Login';
+import ModulesHub from './pages/ModulesHub';
 import Dashboard from './pages/Dashboard';
 
 // Production
@@ -49,37 +51,33 @@ import Settings from './pages/Settings';
 import ShiferProductionPerformance from './pages/shifer/ShiferProductionPerformance';
 import ShiferIssueItemMetaterials from './pages/shifer/ShiferIssueItemMetaterials';
 
+// Greymix Analytics modules
+import SalesPage from './pages/greymix/SalesPage';
+import WarehousePage from './pages/greymix/WarehousePage';
+import AccountsPage from './pages/greymix/AccountsPage';
+import DebtorsPage from './pages/greymix/DebtorsPage';
+import CreditorsPage from './pages/greymix/CreditorsPage';
+import ExpensesPage from './pages/greymix/ExpensesPage';
+import CashFlowPage from './pages/greymix/CashFlowPage';
+import PnlPage from './pages/greymix/PnlPage';
+
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 60000 } },
 });
 
-// Read localStorage token for a given DB key — used as fallback when React
-// state hasn't propagated yet (setDbTokens is async).
 const lsHas = db => !!localStorage.getItem(DB_META[db]?.token);
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
-  // isAuthenticated uses React state; localStorage is the synchronous fallback
-  // for the one render that fires between login() and the state update landing.
   const ok = isAuthenticated || !!localStorage.getItem('enzo_user');
   return ok ? children : <Navigate to="/login" replace />;
 }
 
-// Redirects "/" to the first available DB's home page
+// After login always go to hub
 function SmartHome() {
-  const { dbTokens } = useAuth();
-  const hasCement = dbTokens.cement || lsHas('cement');
-  const hasShifer = dbTokens.shifer || lsHas('shifer');
-  const hasJbi    = dbTokens.jbi    || lsHas('jbi');
-  if (hasCement) return <Dashboard />;
-  if (hasShifer) return <Navigate to="/shifer/production-performance" replace />;
-  if (hasJbi)    return <Navigate to="/jbi/mill-production" replace />;
-  return <Dashboard />;
+  return <Navigate to="/hub" replace />;
 }
 
-// Guards a route that requires a specific database token.
-// Uses localStorage as a synchronous fallback so that the one-render gap
-// between login() and React state propagation can't bounce the user back.
 function DBRoute({ db, children }) {
   const { dbTokens } = useAuth();
   const hasCement = dbTokens.cement || lsHas('cement');
@@ -87,9 +85,9 @@ function DBRoute({ db, children }) {
   const hasJbi    = dbTokens.jbi    || lsHas('jbi');
 
   if (dbTokens[db] || lsHas(db)) return children;
-  if (hasCement) return <Navigate to="/" replace />;
-  if (hasShifer) return <Navigate to="/shifer/production-performance" replace />;
-  if (hasJbi)    return <Navigate to="/jbi/mill-production" replace />;
+  if (hasCement) return <Navigate to="/hub" replace />;
+  if (hasShifer) return <Navigate to="/hub" replace />;
+  if (hasJbi)    return <Navigate to="/hub" replace />;
   return <Navigate to="/login" replace />;
 }
 
@@ -101,6 +99,23 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+
+            {/* Hub — no sidebar */}
+            <Route path="/hub" element={<ProtectedRoute><ModulesHub /></ProtectedRoute>} />
+
+            {/* Greymix Analytics modules — simple layout with back button */}
+            <Route element={<ProtectedRoute><ModuleLayout /></ProtectedRoute>}>
+              <Route path="/sales"     element={<SalesPage />} />
+              <Route path="/warehouse" element={<WarehousePage />} />
+              <Route path="/accounts"  element={<AccountsPage />} />
+              <Route path="/debtors"   element={<DebtorsPage />} />
+              <Route path="/creditors" element={<CreditorsPage />} />
+              <Route path="/expenses"  element={<ExpensesPage />} />
+              <Route path="/cashflow"  element={<CashFlowPage />} />
+              <Route path="/pnl"       element={<PnlPage />} />
+            </Route>
+
+            {/* Production modules — existing sidebar layout */}
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<SmartHome />} />
 
@@ -191,7 +206,8 @@ export default function App() {
               {/* Settings */}
               <Route path="/settings" element={<Settings />} />
             </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
+
+            <Route path="*" element={<Navigate to="/hub" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
