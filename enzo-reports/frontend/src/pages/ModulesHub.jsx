@@ -144,13 +144,12 @@ export default function ModulesHub() {
                 <div className={styles.cardTop} style={{ background: mod.color }} />
                 <div className={styles.cardContent}>
                   <div className={styles.iconWrap} style={{ background: mod.color + '18', color: mod.color }}>
-                    <Icon size={26} />
+                    <Icon size={30} />
                   </div>
                   <div className={styles.cardText}>
                     <div className={styles.cardTitle}>{mod.titles[l]}</div>
                     <div className={styles.cardDesc}>{mod.descs[l]}</div>
                   </div>
-                  <ChevronRight size={16} className={styles.arrow} style={{ color: mod.color }} />
                 </div>
               </button>
             );
