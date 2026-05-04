@@ -64,10 +64,10 @@ export default function SalesPage() {
     return d.totals ?? d.summary ?? d.kpi ?? {};
   }, [raw]);
 
-  const totalUSD = totals.salesUSD ?? totals.totalUSD ?? totals.totalSalesUSD ?? managers.reduce((s, m) => s + (Number(m.totalUSD) || 0), 0) || null;
-  const totalUZS = totals.salesUZS ?? totals.totalUZS ?? totals.totalSalesUZS ?? managers.reduce((s, m) => s + (Number(m.totalUZS) || 0), 0) || null;
-  const invoiceCount = totals.invoiceCount ?? totals.invoices ?? managers.reduce((s, m) => s + (Number(m.invoiceCount) || 0), 0) || null;
-  const managerCount = totals.managerCount ?? totals.managers ?? managers.length || null;
+  const totalUSD = totals.salesUSD ?? totals.totalUSD ?? totals.totalSalesUSD ?? (managers.reduce((s, m) => s + (Number(m.totalUSD) || 0), 0) || null);
+  const totalUZS = totals.salesUZS ?? totals.totalUZS ?? totals.totalSalesUZS ?? (managers.reduce((s, m) => s + (Number(m.totalUZS) || 0), 0) || null);
+  const invoiceCount = totals.invoiceCount ?? totals.invoices ?? (managers.reduce((s, m) => s + (Number(m.invoiceCount) || 0), 0) || null);
+  const managerCount = totals.managerCount ?? totals.managers ?? (managers.length || null);
 
   const STAT_CARDS = [
     { key: 'totalUSD',   value: fmt(totalUSD, '$'),  label: T({ uz: 'JAMI SOTUVLAR USD', ru: 'ИТОГО ПРОДАЖИ USD', en: 'TOTAL SALES USD' }),   icon: DollarSign, color: '#059669' },
