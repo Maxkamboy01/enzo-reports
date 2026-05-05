@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../context/I18nContext';
-import { Loader2, Database, Hash, User, Globe, Key, ChevronDown, ChevronUp, LogIn } from 'lucide-react';
+import { Loader2, Database, Hash, User, Globe } from 'lucide-react';
 import styles from './Login.module.css';
 
 const LANG_OPTIONS = [
@@ -12,19 +12,13 @@ const LANG_OPTIONS = [
 ];
 
 export default function Login() {
-  const { login, setManualToken, DB_META } = useAuth();
+  const { login, DB_META } = useAuth();
   const { t, lang, changeLang } = useI18n();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ employeeCode: '', externalEmployeeNumber: '', deviceId: 'web' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Manual token state
-  const [showManual, setShowManual] = useState(false);
-  const [manualDb, setManualDb] = useState(null);
-  const [manualToken, setManualToken_] = useState('');
-  const [manualLoading, setManualLoading] = useState(false);
 
   const set = key => e => setForm(f => ({ ...f, [key]: e.target.value }));
 
@@ -41,14 +35,6 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleManualLogin = (db) => {
-    const token = manualToken.trim().replace(/^Bearer\s+/i, '');
-    if (!token || !token.startsWith('eyJ')) return;
-    setManualLoading(true);
-    setManualToken(db, token);
-    setTimeout(() => navigate('/hub'), 100);
   };
 
   const canSubmit = form.employeeCode.trim() && form.externalEmployeeNumber.trim() && !loading;
@@ -128,62 +114,6 @@ export default function Login() {
                     : t('login.submit')}
                 </button>
               </form>
-
-              {/* Manual token section — always visible */}
-              <div className={styles.manualSection}>
-                  <button
-                    className={styles.manualToggle}
-                    onClick={() => setShowManual(s => !s)}
-                  >
-                    <Key size={13} />
-                    Tokenni qo'lda kiritish (Swagger)
-                    {showManual ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                  </button>
-
-                  {showManual && (
-                    <div className={styles.manualBody}>
-                      <p className={styles.manualHint}>
-                        Swagger yoki SAP B1 dan olgan Bearer tokeningizni kiriting
-                      </p>
-                      <div className={styles.dbButtons}>
-                        {Object.entries(DB_META).map(([db, meta]) => (
-                          <button
-                            key={db}
-                            className={`${styles.dbSelectBtn} ${manualDb === db ? styles.dbSelectActive : ''}`}
-                            style={{ '--db-color': meta.color }}
-                            onClick={() => { setManualDb(db); setManualToken_(''); }}
-                          >
-                            <span className={styles.dbDot2} style={{ background: meta.color }} />
-                            {meta.label}
-                          </button>
-                        ))}
-                      </div>
-
-                      {manualDb && (
-                        <div className={styles.manualInput}>
-                          <textarea
-                            className={styles.tokenArea}
-                            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                            value={manualToken}
-                            onChange={e => setManualToken_(e.target.value)}
-                            rows={3}
-                          />
-                          <button
-                            className={styles.manualEnterBtn}
-                            onClick={() => handleManualLogin(manualDb)}
-                            disabled={!manualToken.trim() || manualLoading}
-                          >
-                            {manualLoading
-                              ? <Loader2 size={14} className={styles.spin} />
-                              : <LogIn size={14} />
-                            }
-                            {DB_META[manualDb]?.label} ga kirish
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
 
           <p className={styles.footer}>BIS Consulting · Grey Mix Sement Group</p>
 
