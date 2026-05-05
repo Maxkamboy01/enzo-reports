@@ -70,4 +70,5 @@ export const dashJbi = {
   // Product cost (DashboardControllerM)
   productCostStructure: p => apiJbi.get('/api-jbi/api/dashboardcontrollerm/cost-structures', { params: p }).then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; }),
   productCostSummary:   p => apiJbi.get('/api-jbi/api/dashboardcontrollerm/avar-cost-price', { params: p }).then(r => { const v = r.data?.data ?? r.data; return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }),
+  itemsList:            () => apiJbi.get('/api-jbi/api/dashboardcontrollerm/items-list').then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; }).catch(() => apiJbi.get('/api-jbi/api/dashboard/raw-materials-stock').then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; })),
 };

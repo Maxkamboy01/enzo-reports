@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
@@ -20,9 +20,13 @@ const COLORS = [
   '#0891B2','#F59E0B','#0D9488','#64748B','#EC4899',
 ];
 
+const getItemCode = r => r.itemCode ?? r.ItemCode ?? r.code ?? r.Code ?? '';
+const getItemName = r => r.itemName ?? r.ItemName ?? r.name ?? r.Name ?? r.description ?? '';
+
 export default function ProductCostPage({
   costFetcher = dashGreymix.productCostStructure,
   priceFetcher = dashGreymix.productCostSummary,
+  itemsFetcher = dashGreymix.itemsList,
   queryKey = 'shifer',
 }) {
   const firstOfYear = new Date().getFullYear() + '-01-01';
@@ -33,6 +37,38 @@ export default function ProductCostPage({
   const [dateFrom, setDateFrom]   = useState(firstOfYear);
   const [dateTo,   setDateTo]     = useState(today);
   const [searched, setSearched]   = useState(false);
+  const [showSugg, setShowSugg]   = useState(false);
+  const wrapRef = useRef(null);
+
+  // Pre-load items for autocomplete
+  const { data: rawItems = [] } = useQuery({
+    queryKey: [`${queryKey}-items-list`],
+    queryFn: itemsFetcher,
+    staleTime: 10 * 60 * 1000,
+    retry: 1,
+  });
+
+  const itemOptions = useMemo(() => {
+    const seen = new Set();
+    return rawItems
+      .filter(r => { const c = getItemCode(r); if (!c || seen.has(c)) return false; seen.add(c); return true; })
+      .map(r => ({ code: getItemCode(r), name: getItemName(r) }));
+  }, [rawItems]);
+
+  const suggestions = useMemo(() => {
+    if (inputVal.length < 1) return [];
+    const q = inputVal.toLowerCase();
+    return itemOptions
+      .filter(i => i.code.toLowerCase().includes(q) || i.name.toLowerCase().includes(q))
+      .slice(0, 12);
+  }, [inputVal, itemOptions]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = e => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setShowSugg(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const enabled = !!itemCode;
 
@@ -53,11 +89,13 @@ export default function ProductCostPage({
   const isLoading = loadStr || loadSum;
   const isFetching = fetchStr;
 
-  const handleSearch = () => {
-    const v = inputVal.trim();
+  const handleSearch = (code) => {
+    const v = (code ?? inputVal).trim();
     if (!v) return;
+    setInputVal(v);
     setItemCode(v);
     setSearched(true);
+    setShowSugg(false);
   };
 
   const refetch = () => { refetchStr(); refetchSum(); };
@@ -91,15 +129,40 @@ export default function ProductCostPage({
 
       {/* ── Search bar ── */}
       <div className={pcStyles.searchBar}>
-        <div className={pcStyles.itemSearchWrap}>
-          <Package size={15} className={pcStyles.searchIcon} />
-          <input
-            className={pcStyles.itemInput}
-            placeholder={T({ uz: 'Mahsulot kodi (masalan: SHF-001)...', ru: 'Код товара (напр. SHF-001)...', en: 'Item code (e.g. SHF-001)...' })}
-            value={inputVal}
-            onChange={e => setInputVal(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSearch()}
-          />
+        <div className={pcStyles.itemSearchOuter} ref={wrapRef}>
+          <div className={pcStyles.itemSearchWrap}>
+            <Package size={15} className={pcStyles.searchIcon} />
+            <input
+              className={pcStyles.itemInput}
+              placeholder={T({ uz: 'Mahsulot kodi yoki nomini kiriting...', ru: 'Введите код или название товара...', en: 'Type item code or name...' })}
+              value={inputVal}
+              onChange={e => { setInputVal(e.target.value); setShowSugg(true); }}
+              onFocus={() => setShowSugg(true)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSearch(); if (e.key === 'Escape') setShowSugg(false); }}
+              autoComplete="off"
+            />
+          </div>
+          {showSugg && suggestions.length > 0 && (
+            <div className={pcStyles.suggBox}>
+              {suggestions.map(s => (
+                <button
+                  key={s.code}
+                  className={pcStyles.suggItem}
+                  onMouseDown={e => { e.preventDefault(); handleSearch(s.code); }}
+                >
+                  <span className={pcStyles.suggCode}>{s.code}</span>
+                  {s.name && <span className={pcStyles.suggName}>{s.name}</span>}
+                </button>
+              ))}
+            </div>
+          )}
+          {showSugg && inputVal.length >= 1 && suggestions.length === 0 && itemOptions.length > 0 && (
+            <div className={pcStyles.suggBox}>
+              <div className={pcStyles.suggEmpty}>
+                {T({ uz: 'Topilmadi', ru: 'Не найдено', en: 'No matches' })}
+              </div>
+            </div>
+          )}
         </div>
         <div className={styles.dateRange} style={{ flex: 'none' }}>
           <Calendar size={13} className={styles.calIcon} />
@@ -107,7 +170,7 @@ export default function ProductCostPage({
           <span className={styles.dateSep}>—</span>
           <input type="date" value={dateTo}   onChange={e => setDateTo(e.target.value)}   className={styles.dateInput} />
         </div>
-        <button className={pcStyles.searchBtn} onClick={handleSearch}>
+        <button className={pcStyles.searchBtn} onClick={() => handleSearch()}>
           <Search size={14} />
           {T({ uz: 'Qidirish', ru: 'Найти', en: 'Search' })}
         </button>

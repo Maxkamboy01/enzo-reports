@@ -15,9 +15,9 @@ export default function DataPage({
 }) {
   const { t } = useI18n();
   const today = new Date().toISOString().slice(0, 10);
-  const firstOfMonth = today.slice(0, 7) + '-01';
-  const [params, setParams] = useState({ dateFrom: firstOfMonth, dateTo: today, ...defaultParams });
-  const [applied, setApplied] = useState({ dateFrom: firstOfMonth, dateTo: today, ...defaultParams, pageSize: 500 });
+  const firstOfYear = new Date().getFullYear() + '-01-01';
+  const [params, setParams] = useState({ dateFrom: firstOfYear, dateTo: today, ...defaultParams });
+  const [applied, setApplied] = useState({ dateFrom: firstOfYear, dateTo: today, ...defaultParams, pageSize: 500 });
   const [page, setPage] = useState(0);
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({

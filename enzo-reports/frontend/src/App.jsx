@@ -153,7 +153,7 @@ export default function App() {
 
               <Route path="/inventory-transfer" element={<DBRoute db="cement"><InventoryTransfer /></DBRoute>} />
 
-              <Route path="/product-cost" element={<DBRoute db="cement"><ProductCostPage costFetcher={dash.productCostStructure} priceFetcher={dash.productCostSummary} queryKey="cement" /></DBRoute>} />
+              <Route path="/product-cost" element={<DBRoute db="cement"><ProductCostPage costFetcher={dash.productCostStructure} priceFetcher={dash.productCostSummary} itemsFetcher={dash.itemsList} queryKey="cement" /></DBRoute>} />
 
               {/* ── Shifer routes ── */}
               <Route path="/shifer/production-performance" element={<DBRoute db="shifer"><ShiferProductionPerformance /></DBRoute>} />
@@ -187,7 +187,7 @@ export default function App() {
 
               <Route path="/shifer/inventory-transfer" element={<DBRoute db="shifer"><InventoryTransfer fetcher={dashShifer.inventoryTransfer} queryKey="shifer-inventory-transfer" /></DBRoute>} />
 
-              <Route path="/shifer/product-cost" element={<DBRoute db="shifer"><ProductCostPage costFetcher={dashShifer.productCostStructure} priceFetcher={dashShifer.productCostSummary} queryKey="shifer" /></DBRoute>} />
+              <Route path="/shifer/product-cost" element={<DBRoute db="shifer"><ProductCostPage costFetcher={dashShifer.productCostStructure} priceFetcher={dashShifer.productCostSummary} itemsFetcher={dashShifer.itemsList} queryKey="shifer-prod" /></DBRoute>} />
 
               {/* ── JBI routes ── */}
               <Route path="/jbi/mill-production" element={<DBRoute db="jbi"><MillProduction fetcher={dashJbi.millProduction} queryKey="jbi-mill-production" /></DBRoute>} />
@@ -212,7 +212,7 @@ export default function App() {
 
               <Route path="/jbi/inventory-transfer" element={<DBRoute db="jbi"><InventoryTransfer fetcher={dashJbi.inventoryTransfer} queryKey="jbi-inventory-transfer" /></DBRoute>} />
 
-              <Route path="/jbi/product-cost" element={<DBRoute db="jbi"><ProductCostPage costFetcher={dashJbi.productCostStructure} priceFetcher={dashJbi.productCostSummary} queryKey="jbi" /></DBRoute>} />
+              <Route path="/jbi/product-cost" element={<DBRoute db="jbi"><ProductCostPage costFetcher={dashJbi.productCostStructure} priceFetcher={dashJbi.productCostSummary} itemsFetcher={dashJbi.itemsList} queryKey="jbi" /></DBRoute>} />
 
             </Route>
 

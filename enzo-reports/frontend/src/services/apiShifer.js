@@ -81,4 +81,5 @@ export const dashShifer = {
   // Product cost (DashboardControllerM)
   productCostStructure: p => apiShifer.get('/api-shifer/api/dashboardcontrollerm/cost-structures', { params: p }).then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; }),
   productCostSummary:   p => apiShifer.get('/api-shifer/api/dashboardcontrollerm/avar-cost-price', { params: p }).then(r => { const v = r.data?.data ?? r.data; return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }),
+  itemsList:            () => apiShifer.get('/api-shifer/api/dashboardcontrollerm/items-list').then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; }).catch(() => apiShifer.get('/api-shifer/api/dashboard/raw-materials-stock').then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; })),
 };
