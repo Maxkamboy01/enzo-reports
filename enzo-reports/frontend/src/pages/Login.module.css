@@ -1,81 +1,101 @@
-/* ── Page shell ── */
 .page {
   min-height: 100vh;
   display: flex;
   background: #fff;
-  position: relative;
   overflow: hidden;
 }
 
-/* ── BIS corner mark ── */
-.bisCorner {
-  position: absolute;
-  top: 28px;
-  left: 32px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 10;
-}
-
-.bisLabel {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #94A3B8;
-  letter-spacing: 0.02em;
-  display: none;
-}
-
-@media (min-width: 640px) {
-  .bisLabel { display: block; }
-}
-
-/* ── Left panel (form) ── */
+/* ── Left panel ── */
 .left {
   width: 100%;
   display: flex;
-  align-items: center;
-  padding: 100px 40px 80px;
+  flex-direction: column;
+  padding: 32px 40px 40px;
 }
 
 @media (min-width: 900px) {
   .left {
-    width: 460px;
+    width: 480px;
     flex-shrink: 0;
-    padding: 100px 72px 80px 80px;
+    padding: 36px 72px 48px 64px;
   }
 }
 
+/* Top bar: logo + lang */
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 64px;
+}
+
+.bisLogo {
+  height: 48px;
+  width: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.langBar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #F1F5F9;
+  border-radius: 100px;
+  padding: 4px 6px;
+}
+
+.langBtn {
+  padding: 5px 10px;
+  border-radius: 100px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #64748B;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.langBtn:hover { color: #1B3A8C; background: #fff; }
+.langActive {
+  background: #fff;
+  color: #1B3A8C;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* Form area */
 .formArea {
-  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   max-width: 360px;
 }
 
 .heading {
-  font-size: 2.4rem;
+  font-size: 2.2rem;
   font-weight: 900;
   color: #0F172A;
-  line-height: 1.14;
+  line-height: 1.16;
   letter-spacing: -0.025em;
   margin-bottom: 10px;
 }
 
 @media (min-width: 900px) {
-  .heading { font-size: 2.6rem; }
+  .heading { font-size: 2.5rem; }
 }
 
 .sub {
   font-size: 0.82rem;
   color: #94A3B8;
-  margin-bottom: 52px;
-  font-weight: 400;
+  margin-bottom: 48px;
 }
 
-/* ── Form ── */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 34px;
+  gap: 32px;
 }
 
 .field {
@@ -92,7 +112,6 @@
   text-transform: uppercase;
 }
 
-/* Underline-only input — matches reference design */
 .input {
   border: none;
   border-bottom: 1.5px solid #E2E8F0;
@@ -106,16 +125,12 @@
   font-family: inherit;
   border-radius: 0;
 }
-.input:focus       { border-bottom-color: #1B3A8C; }
-.input::placeholder{ color: #CBD5E1; }
-.input:disabled    { opacity: 0.45; cursor: not-allowed; }
+.input:focus        { border-bottom-color: #1B3A8C; }
+.input::placeholder { color: #CBD5E1; }
+.input:disabled     { opacity: 0.45; cursor: not-allowed; }
 
-.passWrap {
-  position: relative;
-}
-.passWrap .input {
-  padding-right: 34px;
-}
+.passWrap { position: relative; }
+.passWrap .input { padding-right: 32px; }
 
 .eyeBtn {
   position: absolute;
@@ -140,7 +155,6 @@
   font-weight: 500;
 }
 
-/* Dark pill button — matches reference */
 .submitBtn {
   display: inline-flex;
   align-items: center;
@@ -153,26 +167,26 @@
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  transition: opacity 0.2s, transform 0.15s;
+  border: none;
+  cursor: pointer;
   align-self: flex-start;
   min-width: 150px;
   margin-top: 8px;
-  cursor: pointer;
-  border: none;
+  transition: opacity 0.2s, transform 0.15s;
 }
-.submitBtn:hover:not(:disabled) {
-  opacity: 0.82;
-  transform: translateY(-1px);
-}
-.submitBtn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
+.submitBtn:hover:not(:disabled) { opacity: 0.82; transform: translateY(-1px); }
+.submitBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 0.8s linear infinite; }
 
-/* ── Right panel (illustration) ── */
+.footer {
+  margin-top: 40px;
+  font-size: 0.72rem;
+  color: #CBD5E1;
+}
+
+/* ── Right panel ── */
 .right {
   display: none;
 }
@@ -189,7 +203,6 @@
     overflow: hidden;
   }
 
-  /* Subtle radial glow behind illustration */
   .right::before {
     content: '';
     position: absolute;
@@ -205,14 +218,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   position: relative;
   z-index: 1;
+  padding: 48px;
 }
 
-.rightContent svg:last-of-type {
+.enzoLogo {
+  height: 60px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(27,58,140,0.1));
+}
+
+.rightContent svg {
   width: 100%;
-  max-width: 480px;
+  max-width: 460px;
   filter: drop-shadow(0 16px 48px rgba(27,58,140,0.12));
 }
 

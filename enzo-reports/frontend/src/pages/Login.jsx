@@ -1,37 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../context/I18nContext';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import styles from './Login.module.css';
 
-/* ── BIS Consulting logo mark ── */
-function BISMark() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-      <rect width="40" height="40" rx="10" fill="#009EAF"/>
-      <text x="20" y="26" textAnchor="middle" fill="white"
-        fontSize="14" fontWeight="800" fontFamily="Arial, sans-serif" letterSpacing="0.5">
-        BIS
-      </text>
-      <text x="34" y="13" fill="white" fontSize="6" fontFamily="Arial, sans-serif">®</text>
-    </svg>
-  );
-}
-
-/* ── ENZO brand logo ── */
-function ENZOBrand() {
-  return (
-    <svg width="168" height="52" viewBox="0 0 168 52" fill="none">
-      {/* 3 stacked slab bars with slight right offset (perspective) */}
-      <rect x="0"  y="2"  width="42" height="11" rx="2.5" fill="#1B3A8C"/>
-      <rect x="4"  y="19" width="42" height="11" rx="2.5" fill="#1B3A8C"/>
-      <rect x="8"  y="36" width="42" height="11" rx="2.5" fill="#1B3A8C"/>
-      {/* ENZO text */}
-      <text x="60" y="43" fill="#1B3A8C" fontSize="38" fontWeight="900"
-        fontFamily="Arial, sans-serif" letterSpacing="2">ENZO</text>
-    </svg>
-  );
-}
+const LANGS = [
+  { code: 'uz', flag: '🇺🇿', label: "O'z" },
+  { code: 'ru', flag: '🇷🇺', label: 'Рус' },
+  { code: 'en', flag: '🇬🇧', label: 'En'  },
+];
 
 /* ── Isometric data illustration ── */
 function DataIllustration() {
@@ -45,7 +23,6 @@ function DataIllustration() {
     orange: ['#FCD34D','#F59E0B','#D97706'],
   };
 
-  // [col, row, height, palette] — ordered back-to-front (ascending col+row)
   const cubes = [
     [0,0, 85,'blue'],
     [1,0, 28,'grey'],   [0,1, 22,'grey'],
@@ -63,21 +40,9 @@ function DataIllustration() {
         const [topC, rightC, leftC] = PALETTE[type];
         return (
           <g key={i}>
-            {/* Top face */}
-            <polygon
-              points={`${cx},${cy} ${cx+hw},${cy+d} ${cx},${cy+2*d} ${cx-hw},${cy+d}`}
-              fill={topC}
-            />
-            {/* Right face */}
-            <polygon
-              points={`${cx+hw},${cy+d} ${cx+hw},${cy+d+H} ${cx},${cy+2*d+H} ${cx},${cy+2*d}`}
-              fill={rightC}
-            />
-            {/* Left face */}
-            <polygon
-              points={`${cx-hw},${cy+d} ${cx},${cy+2*d} ${cx},${cy+2*d+H} ${cx-hw},${cy+d+H}`}
-              fill={leftC}
-            />
+            <polygon points={`${cx},${cy} ${cx+hw},${cy+d} ${cx},${cy+2*d} ${cx-hw},${cy+d}`} fill={topC}/>
+            <polygon points={`${cx+hw},${cy+d} ${cx+hw},${cy+d+H} ${cx},${cy+2*d+H} ${cx},${cy+2*d}`} fill={rightC}/>
+            <polygon points={`${cx-hw},${cy+d} ${cx},${cy+2*d} ${cx},${cy+2*d+H} ${cx-hw},${cy+d+H}`} fill={leftC}/>
           </g>
         );
       })}
@@ -85,10 +50,10 @@ function DataIllustration() {
   );
 }
 
-/* ── Main Login component ── */
 export default function Login() {
-  const { login } = useAuth();
-  const navigate  = useNavigate();
+  const { login }         = useAuth();
+  const { lang, changeLang } = useI18n();
+  const navigate          = useNavigate();
 
   const [form,    setForm]    = useState({ employeeCode: '', externalEmployeeNumber: '' });
   const [loading, setLoading] = useState(false);
@@ -115,22 +80,31 @@ export default function Login() {
   return (
     <div className={styles.page}>
 
-      {/* BIS logo — absolute top-left */}
-      <div className={styles.bisCorner}>
-        <BISMark />
-        <span className={styles.bisLabel}>BIS Consulting</span>
-      </div>
-
       {/* ── Left: form panel ── */}
       <div className={styles.left}>
-        <div className={styles.formArea}>
 
+        {/* Top row: BIS logo + lang switcher */}
+        <div className={styles.topBar}>
+          <img src="/bis-logo.png" alt="BIS Consulting" className={styles.bisLogo} />
+          <div className={styles.langBar}>
+            {LANGS.map(l => (
+              <button
+                key={l.code}
+                className={`${styles.langBtn} ${lang === l.code ? styles.langActive : ''}`}
+                onClick={() => changeLang(l.code)}
+              >
+                {l.flag} {l.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Form area */}
+        <div className={styles.formArea}>
           <h1 className={styles.heading}>
             Sign in to<br/>ENZO Analytics<br/>Dashboard
           </h1>
-          <p className={styles.sub}>
-            Grey Mix Sement Group · SAP B1 Analytics
-          </p>
+          <p className={styles.sub}>Grey Mix Sement Group · SAP B1 Analytics</p>
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.field}>
@@ -159,12 +133,7 @@ export default function Login() {
                   autoComplete="current-password"
                   disabled={loading}
                 />
-                <button
-                  type="button"
-                  className={styles.eyeBtn}
-                  onClick={() => setShowPw(s => !s)}
-                  tabIndex={-1}
-                >
+                <button type="button" className={styles.eyeBtn} onClick={() => setShowPw(s => !s)} tabIndex={-1}>
                   {showPw ? <EyeOff size={15}/> : <Eye size={15}/>}
                 </button>
               </div>
@@ -178,13 +147,15 @@ export default function Login() {
                 : 'Sign in'}
             </button>
           </form>
+
+          <p className={styles.footer}>© 2026 BIS Consulting. All rights reserved.</p>
         </div>
       </div>
 
       {/* ── Right: illustration panel ── */}
       <div className={styles.right}>
         <div className={styles.rightContent}>
-          <ENZOBrand />
+          <img src="/enzo-logo-brand.png" alt="ENZO" className={styles.enzoLogo} />
           <DataIllustration />
           <p className={styles.rightSub}>Analytics Portal · Powered by BIS Consulting®</p>
         </div>
