@@ -197,21 +197,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #F4F7FF;
+    background: #fff;
     border-left: 1px solid #EEF2FB;
     position: relative;
     overflow: hidden;
   }
 
-  .right::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 70% 60% at 55% 50%, rgba(27,58,140,0.07) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 40% at 70% 35%, rgba(0,158,175,0.06) 0%, transparent 60%);
-    pointer-events: none;
-  }
 }
 
 .rightContent {
@@ -224,16 +215,10 @@
   padding: 48px;
 }
 
-.enzoLogo {
-  height: 60px;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 8px rgba(27,58,140,0.1));
-}
-
-.rightContent svg {
+.lockupImg {
   width: 100%;
-  max-width: 460px;
-  filter: drop-shadow(0 16px 48px rgba(27,58,140,0.12));
+  max-width: 420px;
+  object-fit: contain;
 }
 
 .rightSub {

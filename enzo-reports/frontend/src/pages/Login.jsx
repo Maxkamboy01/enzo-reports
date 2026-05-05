@@ -11,49 +11,10 @@ const LANGS = [
   { code: 'en', flag: '🇬🇧', label: 'En'  },
 ];
 
-/* ── Isometric data illustration ── */
-function DataIllustration() {
-  const hw = 38, d = 19;
-  const ox = 210, oy = 108;
-
-  const PALETTE = {
-    blue:   ['#5B7FE8','#2D52B0','#1B3A8C'],
-    teal:   ['#26C9DC','#009AAC','#007282'],
-    grey:   ['#E8F0FA','#BEC8D8','#94A3B8'],
-    orange: ['#FCD34D','#F59E0B','#D97706'],
-  };
-
-  const cubes = [
-    [0,0, 85,'blue'],
-    [1,0, 28,'grey'],   [0,1, 22,'grey'],
-    [2,0, 58,'teal'],   [1,1,108,'blue'],   [0,2, 62,'teal'],
-    [3,0, 42,'orange'], [2,1, 48,'teal'],   [1,2, 22,'grey'],
-    [3,1, 68,'blue'],   [2,2, 82,'blue'],
-    [3,2, 32,'teal'],
-  ];
-
-  return (
-    <svg viewBox="50 90 380 250" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {cubes.map(([col, row, H, type], i) => {
-        const cx = ox + (col - row) * hw;
-        const cy = oy + (col + row) * d;
-        const [topC, rightC, leftC] = PALETTE[type];
-        return (
-          <g key={i}>
-            <polygon points={`${cx},${cy} ${cx+hw},${cy+d} ${cx},${cy+2*d} ${cx-hw},${cy+d}`} fill={topC}/>
-            <polygon points={`${cx+hw},${cy+d} ${cx+hw},${cy+d+H} ${cx},${cy+2*d+H} ${cx},${cy+2*d}`} fill={rightC}/>
-            <polygon points={`${cx-hw},${cy+d} ${cx},${cy+2*d} ${cx},${cy+2*d+H} ${cx-hw},${cy+d+H}`} fill={leftC}/>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
 export default function Login() {
-  const { login }         = useAuth();
-  const { lang, changeLang } = useI18n();
-  const navigate          = useNavigate();
+  const { login }            = useAuth();
+  const { lang, changeLang, t } = useI18n();
+  const navigate             = useNavigate();
 
   const [form,    setForm]    = useState({ employeeCode: '', externalEmployeeNumber: '' });
   const [loading, setLoading] = useState(false);
@@ -71,7 +32,7 @@ export default function Login() {
       await login({ ...form, deviceId: 'web' });
       navigate('/hub');
     } catch (err) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || t('login.error_default'));
     } finally {
       setLoading(false);
     }
@@ -102,13 +63,13 @@ export default function Login() {
         {/* Form area */}
         <div className={styles.formArea}>
           <h1 className={styles.heading}>
-            Sign in to<br/>ENZO Analytics<br/>Dashboard
+            {t('login.title')}<br/>ENZO Analytics<br/>Dashboard
           </h1>
           <p className={styles.sub}>Grey Mix Sement Group · SAP B1 Analytics</p>
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.field}>
-              <label className={styles.label}>Employee Code</label>
+              <label className={styles.label}>{t('login.employee_code')}</label>
               <input
                 className={styles.input}
                 type="text"
@@ -122,7 +83,7 @@ export default function Login() {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>Password</label>
+              <label className={styles.label}>{t('login.ext_number')}</label>
               <div className={styles.passWrap}>
                 <input
                   className={styles.input}
@@ -143,8 +104,8 @@ export default function Login() {
 
             <button type="submit" className={styles.submitBtn} disabled={!canSubmit}>
               {loading
-                ? <><Loader2 size={16} className={styles.spin}/> Signing in…</>
-                : 'Sign in'}
+                ? <><Loader2 size={16} className={styles.spin}/> {t('login.loading_btn')}</>
+                : t('login.submit')}
             </button>
           </form>
 
@@ -152,11 +113,10 @@ export default function Login() {
         </div>
       </div>
 
-      {/* ── Right: illustration panel ── */}
+      {/* ── Right: lockup panel ── */}
       <div className={styles.right}>
         <div className={styles.rightContent}>
-          <img src="/enzo-logo-brand.png" alt="ENZO" className={styles.enzoLogo} />
-          <DataIllustration />
+          <img src="/bis-enzo-lockup.png" alt="BIS Consulting · ENZO" className={styles.lockupImg} />
           <p className={styles.rightSub}>Analytics Portal · Powered by BIS Consulting®</p>
         </div>
       </div>
