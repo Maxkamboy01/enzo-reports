@@ -100,10 +100,24 @@ export default function ProductCostPage({
 
   const refetch = () => { refetchStr(); refetchSum(); };
 
-  const totalCost     = summary.TotalCost  ?? summary.totalCost  ?? 0;
-  const totalQty      = summary.TotalQty   ?? summary.totalQty   ?? 0;
-  const avgCostPerUnit = summary.AvgCostPerUnit ?? summary.avgCostPerUnit ?? (totalQty > 0 ? totalCost / totalQty : 0);
-  const parentItem    = summary.ParentItem ?? summary.parentItem ?? itemCode;
+  // Sum from structure as reliable fallback when summary fields differ
+  const totalCostFromStructure = useMemo(() =>
+    structure.reduce((s, r) => s + Number(r.TotalCost ?? r.totalCost ?? r.Cost ?? r.cost ?? 0), 0),
+    [structure]
+  );
+
+  const totalCost = summary.TotalCost ?? summary.totalCost ?? summary.TotalCostPrice ??
+    summary.totalCostPrice ?? summary.totalCostUZS ?? summary.TotalCostUZS ?? 0;
+  const totalCostFinal = totalCost || totalCostFromStructure;
+
+  const totalQty = summary.TotalQty ?? summary.totalQty ?? summary.TotalQuantity ??
+    summary.totalQuantity ?? summary.Qty ?? summary.qty ?? 0;
+
+  const avgCostPerUnit = summary.AvgCostPerUnit ?? summary.avgCostPerUnit ??
+    summary.AvgCostPrice ?? summary.avgCostPrice ?? summary.AverageCostPrice ??
+    (totalQty > 0 ? totalCostFinal / totalQty : 0);
+
+  const parentItem = summary.ParentItem ?? summary.parentItem ?? itemCode;
 
   const chartData = useMemo(() =>
     structure.map(r => ({
@@ -217,7 +231,7 @@ export default function ProductCostPage({
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <div className={styles.statLabel} style={{ borderLeftColor: '#1B3A8C' }}>{T({ uz: 'JAMI XARAJAT UZS', ru: 'ИТОГО СЕБЕСТОИМОСТЬ UZS', en: 'TOTAL COST UZS' })}</div>
-            <div className={styles.statValue}>{fmt(totalCost)}</div>
+            <div className={styles.statValue}>{fmt(totalCostFinal)}</div>
             <div className={styles.statIcon} style={{ background: '#1B3A8C18', color: '#1B3A8C' }}><DollarSign size={20} /></div>
           </div>
           <div className={styles.statCard}>
@@ -362,7 +376,7 @@ export default function ProductCostPage({
               <tfoot>
                 <tr className={styles.totalRow}>
                   <td colSpan={4} className={styles.td}>{T({ uz: 'JAMI', ru: 'ИТОГО', en: 'TOTAL' })}</td>
-                  <td className={styles.tdR}>{fmt(totalCost)}</td>
+                  <td className={styles.tdR}>{fmt(totalCostFinal)}</td>
                   <td className={styles.td} style={{ fontSize: '0.78rem', color: '#64748B' }}>100%</td>
                 </tr>
               </tfoot>

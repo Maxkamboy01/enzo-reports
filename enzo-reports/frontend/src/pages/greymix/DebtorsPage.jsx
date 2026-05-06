@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
 import { Search, RefreshCw, UserMinus, Calendar } from 'lucide-react';
@@ -231,77 +231,135 @@ function AgingTab() {
 
 /* ── Reconciliation tab ── */
 function ReconTab({ dateFrom, dateTo }) {
-  const [search, setSearch] = useState('');
+  const [inputVal,    setInputVal]    = useState('');
+  const [cardCode,    setCardCode]    = useState('');
+  const [cardLabel,   setCardLabel]   = useState('');
+  const [showSugg,    setShowSugg]    = useState(false);
+  const wrapRef = useRef(null);
+
+  // Load debitors list for the picker
+  const { data: list = [] } = useQuery({
+    queryKey: ['greymix-debitors-list'],
+    queryFn: () => dashGreymix.debitorsList(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const options = useMemo(() => list.map(r => ({
+    code: r.cardCode ?? r.code ?? '',
+    name: r.cardName ?? r.name ?? '',
+  })).filter(o => o.code), [list]);
+
+  const suggestions = useMemo(() => {
+    if (!inputVal.trim()) return options.slice(0, 10);
+    const q = inputVal.toLowerCase();
+    return options.filter(o => o.code.toLowerCase().includes(q) || o.name.toLowerCase().includes(q)).slice(0, 12);
+  }, [inputVal, options]);
+
+  useEffect(() => {
+    const handler = e => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setShowSugg(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const select = (o) => { setCardCode(o.code); setCardLabel(`${o.code} — ${o.name}`); setInputVal(`${o.code} — ${o.name}`); setShowSugg(false); };
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-debitors-reconciliation', dateFrom, dateTo],
-    queryFn: () => dashGreymix.debitorsReconciliation({ dateFrom, dateTo }),
+    queryKey: ['greymix-debitors-reconciliation', cardCode, dateFrom, dateTo],
+    queryFn: () => dashGreymix.debitorsReconciliation({ cardCode, dateFrom, dateTo }),
+    enabled: !!cardCode,
     staleTime: 60000,
   });
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return data;
-    const q = search.toLowerCase();
-    return data.filter(r =>
-      String(r.cardCode ?? r.code ?? '').toLowerCase().includes(q) ||
-      String(r.cardName ?? r.name ?? '').toLowerCase().includes(q) ||
-      String(r.docNum ?? '').toLowerCase().includes(q)
-    );
-  }, [data, search]);
-
   const COLS = [
-    { key: 'docDate',    label: { uz: 'Sana',      ru: 'Дата',         en: 'Date' },          fmt: fmtDate },
-    { key: 'docNum',     label: { uz: 'Hujjat №',  ru: 'Документ №',   en: 'Document #' } },
-    { key: 'cardCode',   label: { uz: 'Kod',       ru: 'Код',          en: 'Code' } },
-    { key: 'cardName',   label: { uz: 'Mijoz',     ru: 'Клиент',       en: 'Customer' }, alt: 'name' },
-    { key: 'debit',      label: { uz: 'Debet',     ru: 'Дебет',        en: 'Debit' },     right: true },
-    { key: 'credit',     label: { uz: 'Kredit',    ru: 'Кредит',       en: 'Credit' },    right: true },
-    { key: 'balance',    label: { uz: 'Qoldiq',    ru: 'Остаток',      en: 'Balance' },   right: true, alt: 'balanceUZS' },
+    { key: 'docDate', label: { uz: 'Sana',     ru: 'Дата',        en: 'Date' },       fmt: fmtDate },
+    { key: 'docNum',  label: { uz: 'Hujjat №', ru: 'Документ №',  en: 'Document #' }, alt: 'docEntry' },
+    { key: 'debit',   label: { uz: 'Debet',    ru: 'Дебет',       en: 'Debit' },      right: true, alt: 'debitUZS' },
+    { key: 'credit',  label: { uz: 'Kredit',   ru: 'Кредит',      en: 'Credit' },     right: true, alt: 'creditUZS' },
+    { key: 'balance', label: { uz: 'Qoldiq',   ru: 'Остаток',     en: 'Balance' },    right: true, alt: 'balanceUZS' },
   ];
 
   return (
     <>
-      <div className={styles.bpFilterBar}>
-        <div className={styles.searchWrap}>
-          <Search size={14} className={styles.searchIcon} />
-          <input className={styles.searchInput}
-            placeholder={T({ uz: "Mijoz yoki hujjat...", ru: 'Клиент или документ...', en: 'Customer or document...' })}
-            value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
-        <div className={styles.bpTotal}>
-          {T({ uz: 'Jami:', ru: 'Всего:', en: 'Total:' })} <span className={styles.bpTotalValue}>{isLoading ? '…' : filtered.length}</span>
-        </div>
-        <button className={styles.refreshBtn} onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw size={13} className={isFetching ? styles.spin : ''} />
-        </button>
-      </div>
-      <div className={styles.tableCard}>
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead><tr>
-              <th className={styles.numTh}>#</th>
-              {COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{T(c.label)}</th>)}
-            </tr></thead>
-            <tbody>
-              {isLoading ? <tr><td colSpan={8}><Spinner /></td></tr>
-              : filtered.length === 0 ? <NoData />
-              : filtered.map((row, i) => (
-                <tr key={i} className={styles.tr}>
-                  <td className={styles.numTd}>{i + 1}</td>
-                  {COLS.map(c => {
-                    const val = row[c.key] ?? (c.alt ? row[c.alt] : null);
-                    return (
-                      <td key={c.key} className={c.right ? styles.tdR : styles.td}>
-                        {c.fmt ? c.fmt(val) : c.right ? fmt(val) : (val ?? '—')}
-                      </td>
-                    );
-                  })}
-                </tr>
+      {/* Client picker */}
+      <div className={styles.bpFilterBar} style={{ alignItems: 'flex-start' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 260 }} ref={wrapRef}>
+          <div className={styles.searchWrap}>
+            <Search size={14} className={styles.searchIcon} />
+            <input className={styles.searchInput}
+              placeholder={T({ uz: 'Debitorni tanlang...', ru: 'Выберите дебитора...', en: 'Select debtor...' })}
+              value={inputVal}
+              onChange={e => { setInputVal(e.target.value); setCardCode(''); setShowSugg(true); }}
+              onFocus={() => setShowSugg(true)}
+              autoComplete="off"
+            />
+          </div>
+          {showSugg && suggestions.length > 0 && (
+            <div style={{ position:'absolute', top:'calc(100% + 4px)', left:0, right:0, background:'#fff', border:'1.5px solid #1B3A8C', borderRadius:8, boxShadow:'0 8px 24px rgba(27,58,140,0.12)', zIndex:999, maxHeight:260, overflowY:'auto' }}>
+              {suggestions.map(o => (
+                <button key={o.code} onMouseDown={e => { e.preventDefault(); select(o); }}
+                  style={{ display:'flex', gap:10, width:'100%', padding:'9px 14px', borderBottom:'1px solid #F1F5F9', background:'none', border:'none', cursor:'pointer', textAlign:'left' }}
+                  onMouseEnter={e => e.currentTarget.style.background='#EEF2FF'}
+                  onMouseLeave={e => e.currentTarget.style.background='none'}>
+                  <span style={{ fontSize:'0.8rem', fontWeight:700, color:'#1B3A8C', whiteSpace:'nowrap' }}>{o.code}</span>
+                  <span style={{ fontSize:'0.78rem', color:'#64748B', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{o.name}</span>
+                </button>
               ))}
-            </tbody>
-          </table>
+            </div>
+          )}
         </div>
+        {cardCode && (
+          <button className={styles.refreshBtn} onClick={() => refetch()} disabled={isFetching}>
+            <RefreshCw size={13} className={isFetching ? styles.spin : ''} />
+          </button>
+        )}
       </div>
+
+      {/* Empty state */}
+      {!cardCode && (
+        <div className={styles.tableCard}>
+          <div className={styles.emptyRow} style={{ padding: '40px 20px', color: '#94A3B8' }}>
+            {T({ uz: 'Akt-sverka uchun debitorni tanlang', ru: 'Выберите дебитора для просмотра акта сверки', en: 'Select a debtor to view reconciliation' })}
+          </div>
+        </div>
+      )}
+
+      {/* Results */}
+      {cardCode && (
+        <div className={styles.tableCard}>
+          <div className={styles.tableCardHeader} style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div>
+              <div className={styles.tableCardTitle}>{cardLabel}</div>
+              <div className={styles.tableCardSub}>{dateFrom} — {dateTo}</div>
+            </div>
+            {!isLoading && <span className={styles.rowCount}>{data.length} {T({ uz: 'ta', ru: 'строк', en: 'rows' })}</span>}
+          </div>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead><tr>
+                <th className={styles.numTh}>#</th>
+                {COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{T(c.label)}</th>)}
+              </tr></thead>
+              <tbody>
+                {isLoading ? <tr><td colSpan={6}><Spinner /></td></tr>
+                : data.length === 0 ? <NoData />
+                : data.map((row, i) => (
+                  <tr key={i} className={styles.tr}>
+                    <td className={styles.numTd}>{i + 1}</td>
+                    {COLS.map(c => {
+                      const val = row[c.key] ?? (c.alt ? row[c.alt] : null);
+                      return (
+                        <td key={c.key} className={c.right ? styles.tdR : styles.td}>
+                          {c.fmt ? c.fmt(val) : c.right ? fmt(val) : (val ?? '—')}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </>
   );
 }
