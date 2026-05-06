@@ -17,7 +17,7 @@ export default function DataPage({
   const today = new Date().toISOString().slice(0, 10);
   const firstOfYear = new Date().getFullYear() + '-01-01';
   const [params, setParams] = useState({ dateFrom: firstOfYear, dateTo: today, ...defaultParams });
-  const [applied, setApplied] = useState({ dateFrom: firstOfYear, dateTo: today, ...defaultParams, pageSize: 500 });
+  const [applied, setApplied] = useState({ dateFrom: firstOfYear, dateTo: today, ...defaultParams, pageSize: 2000 });
   const [page, setPage] = useState(0);
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
@@ -43,7 +43,7 @@ export default function DataPage({
   };
 
   const handleApply = () => {
-    setApplied({ ...params, pageSize: 500 });
+    setApplied({ ...params, pageSize: 2000 });
     setPage(0);
   };
 

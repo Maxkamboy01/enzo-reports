@@ -22,15 +22,19 @@ api.interceptors.response.use(
 
 export default api;
 
-const p = ({ dateFrom, dateTo, pageSize, skip } = {}) => ({
+const p = ({ dateFrom, dateTo, itemCode, whsCode, pageSize, skip } = {}) => ({
   StartDate: dateFrom,
   EndDate: dateTo,
+  ...(itemCode  ? { itemCode }  : {}),
+  ...(whsCode   ? { whsCode }   : {}),
   ...(pageSize != null ? { pageSize } : {}),
-  ...(skip != null ? { skip } : {}),
+  ...(skip     != null ? { skip }     : {}),
 });
 
+const toArr = v => Array.isArray(v) ? v : [];
+
 const list = url => params =>
-  api.get(url, { params: p(params) }).then(r => r.data?.data ?? r.data ?? []);
+  api.get(url, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data));
 
 export const dash = {
   // Production
@@ -39,7 +43,7 @@ export const dash = {
   shiftPerformance:          list('/api/dashboard/shift-performance'),
 
   // Raw materials
-  rawMaterialsStock:         () => api.get('/api/dashboard/raw-materials-stock').then(r => r.data?.data ?? r.data ?? []),
+  rawMaterialsStock:         () => api.get('/api/dashboard/raw-materials-stock').then(r => toArr(r.data?.data ?? r.data)),
   rawMaterialReceipt:        list('/api/dashboard/raw-material-receipt'),
   rawMaterialConsumption:    list('/api/dashboard/raw-material-consumption'),
   rawMaterialMovement:       list('/api/dashboard/raw-material-movement'),
@@ -49,7 +53,7 @@ export const dash = {
   materialConsumptionShift:  list('/api/dashboard/material-consumption-shift'),
 
   // Silo & Cement
-  siloStock:                 () => api.get('/api/dashboard/silo-stock').then(r => r.data?.data ?? r.data ?? []),
+  siloStock:                 () => api.get('/api/dashboard/silo-stock').then(r => toArr(r.data?.data ?? r.data)),
   cementConsumption:         list('/api/dashboard/cement-consumption'),
   cementAdditiveComposition: list('/api/dashboard/cement-additive-composition'),
 
