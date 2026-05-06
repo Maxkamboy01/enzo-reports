@@ -22,11 +22,12 @@ api.interceptors.response.use(
 
 export default api;
 
-const p = ({ dateFrom, dateTo, itemCode, whsCode, pageSize, skip } = {}) => ({
+const p = ({ dateFrom, dateTo, itemCode, whsCode, cardCode, pageSize, skip } = {}) => ({
   StartDate: dateFrom,
   EndDate: dateTo,
   ...(itemCode  ? { itemCode }  : {}),
   ...(whsCode   ? { whsCode }   : {}),
+  ...(cardCode  ? { cardCode }  : {}),
   ...(pageSize != null ? { pageSize } : {}),
   ...(skip     != null ? { skip }     : {}),
 });
@@ -76,6 +77,33 @@ export const dash = {
   productCostStructure: p => api.get('/api/dashboardcontrollerm/cost-structures', { params: p }).then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; }),
   productCostSummary:   p => api.get('/api/dashboardcontrollerm/avar-cost-price', { params: p }).then(r => { const v = r.data?.data ?? r.data; return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }),
   itemsList:            () => api.get('/api/dashboardcontrollerm/items-list').then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; }).catch(() => api.get('/api/dashboard/raw-materials-stock').then(r => { const v = r.data?.data ?? r.data; return Array.isArray(v) ? v : []; })),
+};
+
+const BASE_M = '/api/dashboardcontrollerm';
+
+export const dashCementM = {
+  overview:               ()      => api.get(`${BASE_M}/overview`).then(r => { const v = r.data?.data ?? r.data; return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }),
+  salesOverview:          params  => api.get(`${BASE_M}/sales-overview`, { params: p(params) }).then(r => r.data),
+  salesByItems:           params  => api.get(`${BASE_M}/sales-by-items`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  salesByCustomer:        params  => api.get(`${BASE_M}/sales-by-customer`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  stockLow:               params  => api.get(`${BASE_M}/stock-low`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  stockWarehouses:        params  => api.get(`${BASE_M}/stock-warehouses`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  stockMovement:          params  => api.get(`${BASE_M}/stock-movement`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  accountBalance:         ()      => api.get(`${BASE_M}/account-balance`).then(r => toArr(r.data?.data ?? r.data)),
+  debitorsList:           params  => api.get(`${BASE_M}/debitors-list`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  debitorsAging:          params  => api.get(`${BASE_M}/debitors-aging`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  debitorsReconciliation: params  => api.get(`${BASE_M}/debitors-reconciliation`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  creditorsList:          params  => api.get(`${BASE_M}/creditors-list`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  creditorReconciliation: params  => api.get(`${BASE_M}/creditor-reconciliation`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  incomingPayment:        params  => api.get(`${BASE_M}/incoming-payment`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  outgoingPayment:        params  => api.get(`${BASE_M}/outgoing-payment`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  pnlSummary:             params  => api.get(`${BASE_M}/pnl-summary`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  pnlDetails:             params  => api.get(`${BASE_M}/pnl-details`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  expensesList:           params  => api.get(`${BASE_M}/expenses-list`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  expensesSummary:        params  => api.get(`${BASE_M}/expenses-summary`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  productCostStructure:   params  => api.get(`${BASE_M}/cost-structures`, { params: p(params) }).then(r => toArr(r.data?.data ?? r.data)),
+  productCostSummary:     params  => api.get(`${BASE_M}/avar-cost-price`, { params: p(params) }).then(r => { const v = r.data?.data ?? r.data; return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }),
+  itemsList:              ()      => api.get(`${BASE_M}/items-list`).then(r => toArr(r.data?.data ?? r.data)).catch(() => api.get(`${BASE_M}/stock-warehouses`).then(r => toArr(r.data?.data ?? r.data))),
 };
 
 export const fmt = n => {

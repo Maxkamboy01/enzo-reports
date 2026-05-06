@@ -31,12 +31,12 @@ const NoData = () => (
 );
 
 /* ── List tab ── */
-function ListTab() {
+function ListTab({ fetchers, queryPrefix }) {
   const [search, setSearch] = useState('');
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-debitors-list'],
-    queryFn: () => dashGreymix.debitorsList(),
+    queryKey: [`${queryPrefix}-debitors-list`],
+    queryFn: () => fetchers.debitorsList(),
     staleTime: 60000,
   });
 
@@ -153,12 +153,12 @@ function ListTab() {
 }
 
 /* ── Aging tab ── */
-function AgingTab() {
+function AgingTab({ fetchers, queryPrefix }) {
   const [search, setSearch] = useState('');
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-debitors-aging'],
-    queryFn: () => dashGreymix.debitorsAging(),
+    queryKey: [`${queryPrefix}-debitors-aging`],
+    queryFn: () => fetchers.debitorsAging(),
     staleTime: 60000,
   });
 
@@ -230,7 +230,7 @@ function AgingTab() {
 }
 
 /* ── Reconciliation tab ── */
-function ReconTab({ dateFrom, dateTo }) {
+function ReconTab({ dateFrom, dateTo, fetchers, queryPrefix }) {
   const [inputVal,    setInputVal]    = useState('');
   const [cardCode,    setCardCode]    = useState('');
   const [cardLabel,   setCardLabel]   = useState('');
@@ -239,8 +239,8 @@ function ReconTab({ dateFrom, dateTo }) {
 
   // Load debitors list for the picker
   const { data: list = [] } = useQuery({
-    queryKey: ['greymix-debitors-list'],
-    queryFn: () => dashGreymix.debitorsList(),
+    queryKey: [`${queryPrefix}-debitors-list`],
+    queryFn: () => fetchers.debitorsList(),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -264,8 +264,8 @@ function ReconTab({ dateFrom, dateTo }) {
   const select = (o) => { setCardCode(o.code); setCardLabel(`${o.code} — ${o.name}`); setInputVal(`${o.code} — ${o.name}`); setShowSugg(false); };
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-debitors-reconciliation', cardCode, dateFrom, dateTo],
-    queryFn: () => dashGreymix.debitorsReconciliation({ cardCode, dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-debitors-reconciliation`, cardCode, dateFrom, dateTo],
+    queryFn: () => fetchers.debitorsReconciliation({ cardCode, dateFrom, dateTo }),
     enabled: !!cardCode,
     staleTime: 60000,
   });
@@ -365,7 +365,7 @@ function ReconTab({ dateFrom, dateTo }) {
 }
 
 /* ── Main page ── */
-export default function DebtorsPage() {
+export default function DebtorsPage({ fetchers = dashGreymix, queryPrefix = 'greymix' }) {
   const today = new Date().toISOString().slice(0, 10);
   const firstOfYear = new Date().getFullYear() + '-01-01';
   const [dateFrom, setDateFrom] = useState(firstOfYear);
@@ -396,9 +396,9 @@ export default function DebtorsPage() {
         ))}
       </div>
 
-      {tab === 'list'  && <ListTab />}
-      {tab === 'aging' && <AgingTab />}
-      {tab === 'recon' && <ReconTab dateFrom={dateFrom} dateTo={dateTo} />}
+      {tab === 'list'  && <ListTab fetchers={fetchers} queryPrefix={queryPrefix} />}
+      {tab === 'aging' && <AgingTab fetchers={fetchers} queryPrefix={queryPrefix} />}
+      {tab === 'recon' && <ReconTab dateFrom={dateFrom} dateTo={dateTo} fetchers={fetchers} queryPrefix={queryPrefix} />}
     </div>
   );
 }

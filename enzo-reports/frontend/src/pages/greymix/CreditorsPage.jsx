@@ -30,12 +30,12 @@ const NoData = () => (
 );
 
 /* ── List tab ── */
-function ListTab() {
+function ListTab({ fetchers, queryPrefix }) {
   const [search, setSearch] = useState('');
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-creditors-list'],
-    queryFn: () => dashGreymix.creditorsList(),
+    queryKey: [`${queryPrefix}-creditors-list`],
+    queryFn: () => fetchers.creditorsList(),
     staleTime: 60000,
   });
 
@@ -152,7 +152,7 @@ function ListTab() {
 }
 
 /* ── Reconciliation tab ── */
-function ReconTab({ dateFrom, dateTo }) {
+function ReconTab({ dateFrom, dateTo, fetchers, queryPrefix }) {
   const [inputVal,  setInputVal]  = useState('');
   const [cardCode,  setCardCode]  = useState('');
   const [cardLabel, setCardLabel] = useState('');
@@ -160,8 +160,8 @@ function ReconTab({ dateFrom, dateTo }) {
   const wrapRef = useRef(null);
 
   const { data: list = [] } = useQuery({
-    queryKey: ['greymix-creditors-list'],
-    queryFn: () => dashGreymix.creditorsList(),
+    queryKey: [`${queryPrefix}-creditors-list`],
+    queryFn: () => fetchers.creditorsList(),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -185,8 +185,8 @@ function ReconTab({ dateFrom, dateTo }) {
   const select = (o) => { setCardCode(o.code); setCardLabel(`${o.code} — ${o.name}`); setInputVal(`${o.code} — ${o.name}`); setShowSugg(false); };
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-creditor-reconciliation', cardCode, dateFrom, dateTo],
-    queryFn: () => dashGreymix.creditorReconciliation({ cardCode, dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-creditor-reconciliation`, cardCode, dateFrom, dateTo],
+    queryFn: () => fetchers.creditorReconciliation({ cardCode, dateFrom, dateTo }),
     enabled: !!cardCode,
     staleTime: 60000,
   });
@@ -283,7 +283,7 @@ function ReconTab({ dateFrom, dateTo }) {
 }
 
 /* ── Main page ── */
-export default function CreditorsPage() {
+export default function CreditorsPage({ fetchers = dashGreymix, queryPrefix = 'greymix' }) {
   const today = new Date().toISOString().slice(0, 10);
   const firstOfYear = new Date().getFullYear() + '-01-01';
   const [dateFrom, setDateFrom] = useState(firstOfYear);
@@ -314,8 +314,8 @@ export default function CreditorsPage() {
         ))}
       </div>
 
-      {tab === 'list'  && <ListTab />}
-      {tab === 'recon' && <ReconTab dateFrom={dateFrom} dateTo={dateTo} />}
+      {tab === 'list'  && <ListTab fetchers={fetchers} queryPrefix={queryPrefix} />}
+      {tab === 'recon' && <ReconTab dateFrom={dateFrom} dateTo={dateTo} fetchers={fetchers} queryPrefix={queryPrefix} />}
     </div>
   );
 }

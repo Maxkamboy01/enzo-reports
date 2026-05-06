@@ -5,8 +5,9 @@ import { I18nProvider } from './context/I18nContext';
 import AppLayout from './components/layout/AppLayout';
 import ModuleLayout from './components/layout/ModuleLayout';
 import { dashShifer } from './services/apiShifer';
-import { dashJbi } from './services/apiJbi';
-import { dash } from './services/api';
+import { dashJbi, dashJbiM } from './services/apiJbi';
+import { dash, dashCementM } from './services/api';
+import { dashGreymix } from './services/apiGreymix';
 
 import Login from './pages/Login';
 import ModulesHub from './pages/ModulesHub';
@@ -108,6 +109,7 @@ export default function App() {
 
             {/* Greymix Analytics modules — simple layout with back button */}
             <Route element={<ProtectedRoute><ModuleLayout /></ProtectedRoute>}>
+              {/* Shifer / Greymix analytics routes (default) */}
               <Route path="/sales"     element={<SalesPage />} />
               <Route path="/warehouse" element={<WarehousePage />} />
               <Route path="/accounts"  element={<AccountsPage />} />
@@ -116,8 +118,30 @@ export default function App() {
               <Route path="/expenses"  element={<ExpensesPage />} />
               <Route path="/cashflow"  element={<CashFlowPage />} />
               <Route path="/pnl"          element={<PnlPage />} />
-              <Route path="/product-cost" element={<ProductCostPage />} />
+              <Route path="/product-cost" element={<ProductCostPage costFetcher={dashGreymix.productCostStructure} priceFetcher={dashGreymix.productCostSummary} itemsFetcher={dashGreymix.itemsList} queryKey="greymix-m" />} />
               <Route path="/settings"     element={<Settings />} />
+
+              {/* JBI analytics routes */}
+              <Route path="/jbi/sales"      element={<DBRoute db="jbi"><SalesPage      fetchers={dashJbiM} queryPrefix="jbi" /></DBRoute>} />
+              <Route path="/jbi/warehouse"  element={<DBRoute db="jbi"><WarehousePage  fetchers={dashJbiM} queryPrefix="jbi" /></DBRoute>} />
+              <Route path="/jbi/accounts"   element={<DBRoute db="jbi"><AccountsPage   fetchers={dashJbiM} queryPrefix="jbi" /></DBRoute>} />
+              <Route path="/jbi/debtors"    element={<DBRoute db="jbi"><DebtorsPage    fetchers={dashJbiM} queryPrefix="jbi" /></DBRoute>} />
+              <Route path="/jbi/creditors"  element={<DBRoute db="jbi"><CreditorsPage  fetchers={dashJbiM} queryPrefix="jbi" /></DBRoute>} />
+              <Route path="/jbi/expenses"   element={<DBRoute db="jbi"><ExpensesPage   fetchers={dashJbiM} queryPrefix="jbi" /></DBRoute>} />
+              <Route path="/jbi/cashflow"   element={<DBRoute db="jbi"><CashFlowPage   fetchers={dashJbiM} queryPrefix="jbi" /></DBRoute>} />
+              <Route path="/jbi/pnl"        element={<DBRoute db="jbi"><PnlPage        fetchers={dashJbiM} queryPrefix="jbi" /></DBRoute>} />
+              <Route path="/jbi/product-cost" element={<DBRoute db="jbi"><ProductCostPage costFetcher={dashJbiM.productCostStructure} priceFetcher={dashJbiM.productCostSummary} itemsFetcher={dashJbiM.itemsList} queryKey="jbi-m" /></DBRoute>} />
+
+              {/* Cement analytics routes */}
+              <Route path="/cement/sales"      element={<DBRoute db="cement"><SalesPage      fetchers={dashCementM} queryPrefix="cement" /></DBRoute>} />
+              <Route path="/cement/warehouse"  element={<DBRoute db="cement"><WarehousePage  fetchers={dashCementM} queryPrefix="cement" /></DBRoute>} />
+              <Route path="/cement/accounts"   element={<DBRoute db="cement"><AccountsPage   fetchers={dashCementM} queryPrefix="cement" /></DBRoute>} />
+              <Route path="/cement/debtors"    element={<DBRoute db="cement"><DebtorsPage    fetchers={dashCementM} queryPrefix="cement" /></DBRoute>} />
+              <Route path="/cement/creditors"  element={<DBRoute db="cement"><CreditorsPage  fetchers={dashCementM} queryPrefix="cement" /></DBRoute>} />
+              <Route path="/cement/expenses"   element={<DBRoute db="cement"><ExpensesPage   fetchers={dashCementM} queryPrefix="cement" /></DBRoute>} />
+              <Route path="/cement/cashflow"   element={<DBRoute db="cement"><CashFlowPage   fetchers={dashCementM} queryPrefix="cement" /></DBRoute>} />
+              <Route path="/cement/pnl"        element={<DBRoute db="cement"><PnlPage        fetchers={dashCementM} queryPrefix="cement" /></DBRoute>} />
+              <Route path="/cement/product-cost" element={<DBRoute db="cement"><ProductCostPage costFetcher={dashCementM.productCostStructure} priceFetcher={dashCementM.productCostSummary} itemsFetcher={dashCementM.itemsList} queryKey="cement-m" /></DBRoute>} />
             </Route>
 
             {/* Production modules — existing sidebar layout */}

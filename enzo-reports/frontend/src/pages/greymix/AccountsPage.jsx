@@ -28,10 +28,10 @@ const GROUP_META = {
   '53': { label: { uz: "O'tkazmalar",  ru: 'Перечисления',  en: 'Transfers' },   color: '#F59E0B' },
 };
 
-export default function AccountsPage() {
+export default function AccountsPage({ fetchers = dashGreymix, queryPrefix = 'greymix' }) {
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-account-balance'],
-    queryFn: () => dashGreymix.accountBalance(),
+    queryKey: [`${queryPrefix}-account-balance`],
+    queryFn: () => fetchers.accountBalance(),
     staleTime: 60000,
   });
 

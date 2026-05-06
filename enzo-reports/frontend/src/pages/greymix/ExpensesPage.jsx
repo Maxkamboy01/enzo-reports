@@ -25,21 +25,21 @@ const LIST_COLS = [
   { label: { uz: 'Izoh',      ru: 'Комментарий',  en: 'Comment' },  resolver: r => gv(r, ['comment','lineMemo','LineMemo','memo','user']) },
 ];
 
-export default function ExpensesPage() {
+export default function ExpensesPage({ fetchers = dashGreymix, queryPrefix = 'greymix' }) {
   const firstOfYear = new Date().getFullYear() + '-01-01';
   const today = new Date().toISOString().slice(0, 10);
   const [dateFrom, setDateFrom] = useState(firstOfYear);
   const [dateTo,   setDateTo]   = useState(today);
 
   const { data: list = [], isLoading: loadList, isFetching: fetchList, refetch: refetchList } = useQuery({
-    queryKey: ['greymix-expenses-list', dateFrom, dateTo],
-    queryFn: () => dashGreymix.expensesList({ dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-expenses-list`, dateFrom, dateTo],
+    queryFn: () => fetchers.expensesList({ dateFrom, dateTo }),
     staleTime: 60000,
   });
 
   const { data: summary = [], isLoading: loadSum, refetch: refetchSum } = useQuery({
-    queryKey: ['greymix-expenses-summary', dateFrom, dateTo],
-    queryFn: () => dashGreymix.expensesSummary({ dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-expenses-summary`, dateFrom, dateTo],
+    queryFn: () => fetchers.expensesSummary({ dateFrom, dateTo }),
     staleTime: 60000,
   });
 

@@ -16,7 +16,7 @@ const fmtPct = n => n == null ? '—' : Number(n).toFixed(1) + '%';
 
 const MONTHS = ['', 'Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyun', 'Iyul', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'];
 
-export default function PnlPage() {
+export default function PnlPage({ fetchers = dashGreymix, queryPrefix = 'greymix' }) {
   const firstOfYear = new Date().getFullYear() + '-01-01';
   const today = new Date().toISOString().slice(0, 10);
   const [dateFrom, setDateFrom] = useState(firstOfYear);
@@ -24,14 +24,14 @@ export default function PnlPage() {
   const [selMonth, setSelMonth] = useState(null);
 
   const { data: summary = [], isLoading: loadSum, isFetching, refetch: refetchSum } = useQuery({
-    queryKey: ['greymix-pnl-summary', dateFrom, dateTo],
-    queryFn: () => dashGreymix.pnlSummary({ dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-pnl-summary`, dateFrom, dateTo],
+    queryFn: () => fetchers.pnlSummary({ dateFrom, dateTo }),
     staleTime: 60000,
   });
 
   const { data: details = [], isLoading: loadDet, refetch: refetchDet } = useQuery({
-    queryKey: ['greymix-pnl-details', dateFrom, dateTo],
-    queryFn: () => dashGreymix.pnlDetails({ dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-pnl-details`, dateFrom, dateTo],
+    queryFn: () => fetchers.pnlDetails({ dateFrom, dateTo }),
     staleTime: 60000,
   });
 

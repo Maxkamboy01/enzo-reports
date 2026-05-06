@@ -29,20 +29,20 @@ const OUT_COLS = [
   { key: 'totalUZS',    label: { uz: 'Jami UZS',    ru: 'Итого UZS',    en: 'Total UZS' },    right: true },
 ];
 
-export default function CashFlowPage() {
+export default function CashFlowPage({ fetchers = dashGreymix, queryPrefix = 'greymix' }) {
   const today = new Date().toISOString().slice(0, 10);
   const [dateFrom, setDateFrom] = useState(today);
   const [dateTo,   setDateTo]   = useState(today);
 
   const { data: incoming = [], isLoading: loadIn, isFetching: fetchIn, refetch: refetchIn } = useQuery({
-    queryKey: ['greymix-incoming-payment', dateFrom, dateTo],
-    queryFn: () => dashGreymix.incomingPayment({ dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-incoming-payment`, dateFrom, dateTo],
+    queryFn: () => fetchers.incomingPayment({ dateFrom, dateTo }),
     staleTime: 60000,
   });
 
   const { data: outgoing = [], isLoading: loadOut, refetch: refetchOut } = useQuery({
-    queryKey: ['greymix-outgoing-payment', dateFrom, dateTo],
-    queryFn: () => dashGreymix.outgoingPayment({ dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-outgoing-payment`, dateFrom, dateTo],
+    queryFn: () => fetchers.outgoingPayment({ dateFrom, dateTo }),
     staleTime: 60000,
   });
 

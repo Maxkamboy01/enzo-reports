@@ -40,10 +40,10 @@ const NoData = () => (
 );
 
 /* ── Overview tab ── */
-function OverviewTab({ dateFrom, dateTo, period }) {
+function OverviewTab({ dateFrom, dateTo, period, fetchers, queryPrefix }) {
   const { data: raw, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-sales-overview', dateFrom, dateTo, period],
-    queryFn: () => dashGreymix.salesOverview({ dateFrom, dateTo, period }),
+    queryKey: [`${queryPrefix}-sales-overview`, dateFrom, dateTo, period],
+    queryFn: () => fetchers.salesOverview({ dateFrom, dateTo, period }),
     staleTime: 60000,
   });
 
@@ -208,12 +208,12 @@ function OverviewTab({ dateFrom, dateTo, period }) {
 }
 
 /* ── By Items tab ── */
-function ItemsTab({ dateFrom, dateTo }) {
+function ItemsTab({ dateFrom, dateTo, fetchers, queryPrefix }) {
   const [search, setSearch] = useState('');
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-sales-by-items', dateFrom, dateTo],
-    queryFn: () => dashGreymix.salesByItems({ dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-sales-by-items`, dateFrom, dateTo],
+    queryFn: () => fetchers.salesByItems({ dateFrom, dateTo }),
     staleTime: 60000,
   });
 
@@ -280,12 +280,12 @@ function ItemsTab({ dateFrom, dateTo }) {
 }
 
 /* ── By Customers tab ── */
-function CustomersTab({ dateFrom, dateTo }) {
+function CustomersTab({ dateFrom, dateTo, fetchers, queryPrefix }) {
   const [search, setSearch] = useState('');
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-sales-by-customer', dateFrom, dateTo],
-    queryFn: () => dashGreymix.salesByCustomer({ dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-sales-by-customer`, dateFrom, dateTo],
+    queryFn: () => fetchers.salesByCustomer({ dateFrom, dateTo }),
     staleTime: 60000,
   });
 
@@ -354,7 +354,7 @@ function CustomersTab({ dateFrom, dateTo }) {
 }
 
 /* ── Main page ── */
-export default function SalesPage() {
+export default function SalesPage({ fetchers = dashGreymix, queryPrefix = 'greymix' }) {
   const today = new Date().toISOString().slice(0, 10);
   const firstOfYear = new Date().getFullYear() + '-01-01';
   const [dateFrom, setDateFrom] = useState(firstOfYear);
@@ -395,9 +395,9 @@ export default function SalesPage() {
         ))}
       </div>
 
-      {tab === 'overview'  && <OverviewTab  dateFrom={dateFrom} dateTo={dateTo} period={period} />}
-      {tab === 'items'     && <ItemsTab     dateFrom={dateFrom} dateTo={dateTo} />}
-      {tab === 'customers' && <CustomersTab dateFrom={dateFrom} dateTo={dateTo} />}
+      {tab === 'overview'  && <OverviewTab  dateFrom={dateFrom} dateTo={dateTo} period={period} fetchers={fetchers} queryPrefix={queryPrefix} />}
+      {tab === 'items'     && <ItemsTab     dateFrom={dateFrom} dateTo={dateTo} fetchers={fetchers} queryPrefix={queryPrefix} />}
+      {tab === 'customers' && <CustomersTab dateFrom={dateFrom} dateTo={dateTo} fetchers={fetchers} queryPrefix={queryPrefix} />}
     </div>
   );
 }

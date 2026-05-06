@@ -27,13 +27,13 @@ const NoData = () => (
 );
 
 /* ── Low Stock tab ── */
-function LowStockTab() {
+function LowStockTab({ fetchers, queryPrefix }) {
   const [search,    setSearch]    = useState('');
   const [threshold, setThreshold] = useState(10);
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-stock-low', threshold],
-    queryFn: () => dashGreymix.stockLow({ threshold }),
+    queryKey: [`${queryPrefix}-stock-low`, threshold],
+    queryFn: () => fetchers.stockLow({ threshold }),
     staleTime: 60000,
   });
 
@@ -110,12 +110,12 @@ function LowStockTab() {
 }
 
 /* ── Warehouses tab ── */
-function WarehousesTab() {
+function WarehousesTab({ fetchers, queryPrefix }) {
   const [search, setSearch] = useState('');
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-stock-warehouses'],
-    queryFn: () => dashGreymix.stockWarehouses(),
+    queryKey: [`${queryPrefix}-stock-warehouses`],
+    queryFn: () => fetchers.stockWarehouses(),
     staleTime: 60000,
   });
 
@@ -188,12 +188,12 @@ function WarehousesTab() {
 }
 
 /* ── Movement tab ── */
-function MovementTab({ dateFrom, dateTo }) {
+function MovementTab({ dateFrom, dateTo, fetchers, queryPrefix }) {
   const [search, setSearch] = useState('');
 
   const { data = [], isLoading, isFetching, refetch } = useQuery({
-    queryKey: ['greymix-stock-movement', dateFrom, dateTo],
-    queryFn: () => dashGreymix.stockMovement({ dateFrom, dateTo }),
+    queryKey: [`${queryPrefix}-stock-movement`, dateFrom, dateTo],
+    queryFn: () => fetchers.stockMovement({ dateFrom, dateTo }),
     staleTime: 60000,
   });
 
@@ -265,7 +265,7 @@ function MovementTab({ dateFrom, dateTo }) {
 }
 
 /* ── Main page ── */
-export default function WarehousePage() {
+export default function WarehousePage({ fetchers = dashGreymix, queryPrefix = 'greymix' }) {
   const today = new Date().toISOString().slice(0, 10);
   const firstOfYear = new Date().getFullYear() + '-01-01';
   const [dateFrom, setDateFrom] = useState(firstOfYear);
@@ -296,9 +296,9 @@ export default function WarehousePage() {
         ))}
       </div>
 
-      {tab === 'low'        && <LowStockTab />}
-      {tab === 'warehouses' && <WarehousesTab />}
-      {tab === 'movement'   && <MovementTab dateFrom={dateFrom} dateTo={dateTo} />}
+      {tab === 'low'        && <LowStockTab fetchers={fetchers} queryPrefix={queryPrefix} />}
+      {tab === 'warehouses' && <WarehousesTab fetchers={fetchers} queryPrefix={queryPrefix} />}
+      {tab === 'movement'   && <MovementTab dateFrom={dateFrom} dateTo={dateTo} fetchers={fetchers} queryPrefix={queryPrefix} />}
     </div>
   );
 }

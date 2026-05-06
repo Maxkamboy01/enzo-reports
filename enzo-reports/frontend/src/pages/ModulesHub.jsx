@@ -114,8 +114,17 @@ export default function ModulesHub() {
     return '/mill-production';
   };
 
+  const getAnalyticsRoute = (baseRoute) => {
+    const lsHas = k => !!localStorage.getItem(k);
+    if (dbTokens.jbi    || lsHas('enzo_token_jbi'))    return `/jbi${baseRoute}`;
+    if (dbTokens.cement || lsHas('enzo_token'))         return `/cement${baseRoute}`;
+    // Shifer/Greymix uses base routes
+    return baseRoute;
+  };
+
   const handleCard = (mod) => {
-    navigate(mod.isProduction ? getProductionRoute() : mod.route);
+    if (mod.isProduction) return navigate(getProductionRoute());
+    navigate(getAnalyticsRoute(mod.route));
   };
 
   const initials = (name) => (name || 'A')[0].toUpperCase();
