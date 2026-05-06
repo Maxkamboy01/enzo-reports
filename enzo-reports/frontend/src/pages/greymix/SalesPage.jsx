@@ -4,7 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { TrendingUp, RefreshCw, Calendar, Users, FileText } from 'lucide-react';
+import { TrendingUp, RefreshCw, Calendar, Users, FileText, Package } from 'lucide-react';
 import { dashGreymix } from '../../services/apiGreymix';
 import styles from './ModulePage.module.css';
 
@@ -17,25 +17,36 @@ const PERIODS = [
   { id: 'month', label: { uz: 'Oy',    ru: 'Месяц',  en: 'Month' } },
 ];
 
+const TABS = [
+  { id: 'overview',  label: { uz: 'Umumiy',      ru: 'Обзор',         en: 'Overview' } },
+  { id: 'items',     label: { uz: 'Tovarlar',    ru: 'По товарам',    en: 'By Items' } },
+  { id: 'customers', label: { uz: 'Mijozlar',    ru: 'По клиентам',   en: 'By Customers' } },
+];
+
 const COLORS = ['#1B3A8C','#059669','#D97706','#DC2626','#7C3AED','#0891B2','#F59E0B','#0D9488'];
 
 const fmt = n => n == null || n === '' ? '—' : Math.round(Number(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const fmtDate = d => d ? String(d).slice(0, 10) : '';
 const T = o => o[lang] ?? o.uz ?? '';
 
-export default function SalesPage() {
-  const today = new Date().toISOString().slice(0, 10);
-  const [dateFrom, setDateFrom] = useState(today);
-  const [dateTo,   setDateTo]   = useState(today);
-  const [period,   setPeriod]   = useState('day');
+const Spinner = () => (
+  <div className={styles.emptyRow} style={{ padding: '40px 20px' }}>
+    <div className={styles.spinner} style={{ margin: '0 auto' }} />
+  </div>
+);
 
+const NoData = () => (
+  <tr><td colSpan={20} className={styles.emptyRow}>{T({ uz: "Ma'lumot topilmadi", ru: 'Данные не найдены', en: 'No data found' })}</td></tr>
+);
+
+/* ── Overview tab ── */
+function OverviewTab({ dateFrom, dateTo, period }) {
   const { data: raw, isLoading, isFetching, refetch } = useQuery({
     queryKey: ['greymix-sales-overview', dateFrom, dateTo, period],
     queryFn: () => dashGreymix.salesOverview({ dateFrom, dateTo, period }),
     staleTime: 60000,
   });
 
-  // Raw rows from API — may be per-day-per-manager (not aggregated)
   const rawRows = useMemo(() => {
     if (!raw) return [];
     if (Array.isArray(raw)) return raw;
@@ -44,7 +55,6 @@ export default function SalesPage() {
     return Array.isArray(d.managers) ? d.managers : Array.isArray(d.managerData) ? d.managerData : [];
   }, [raw]);
 
-  // Aggregate by manager name
   const managers = useMemo(() => {
     const map = {};
     for (const r of rawRows) {
@@ -56,16 +66,13 @@ export default function SalesPage() {
     return Object.values(map).sort((a, b) => b.totalUZS - a.totalUZS);
   }, [rawRows]);
 
-  // Aggregate by date for line chart
   const chartData = useMemo(() => {
-    // If API returned pre-built chart data, prefer it
     if (!Array.isArray(raw) && raw) {
       const d = raw.data ?? raw;
       if (Array.isArray(d.chartData)) return d.chartData;
       if (Array.isArray(d.chart))     return d.chart;
       if (Array.isArray(d.dailyData)) return d.dailyData;
     }
-    // Build from raw rows by date
     const map = {};
     for (const r of rawRows) {
       const dt = r.date ?? r.docDate ?? r.DocDate;
@@ -87,53 +94,19 @@ export default function SalesPage() {
   const managerCount = totals.managerCount ?? totals.managers ?? (managers.length || null);
 
   const STAT_CARDS = [
-    { key: 'totalUZS',   value: fmt(totalUZS),     label: T({ uz: 'JAMI SOTUVLAR UZS', ru: 'ИТОГО ПРОДАЖИ UZS', en: 'TOTAL SALES UZS' }),   icon: TrendingUp, color: '#059669' },
-    { key: 'invoices',   value: fmt(invoiceCount), label: T({ uz: 'HUJJATLAR',          ru: 'НАКЛАДНЫХ',          en: 'DOCUMENTS' }),          icon: FileText,   color: '#7C3AED' },
-    { key: 'managers',   value: fmt(managerCount), label: T({ uz: 'MENEJERLAR',         ru: 'МЕНЕДЖЕРОВ',         en: 'MANAGERS' }),           icon: Users,      color: '#F59E0B' },
+    { key: 'totalUZS',  value: fmt(totalUZS),     label: T({ uz: 'JAMI SOTUVLAR UZS', ru: 'ИТОГО ПРОДАЖИ UZS', en: 'TOTAL SALES UZS' }),   icon: TrendingUp, color: '#059669' },
+    { key: 'invoices',  value: fmt(invoiceCount), label: T({ uz: 'HUJJATLAR',          ru: 'НАКЛАДНЫХ',          en: 'DOCUMENTS' }),          icon: FileText,   color: '#7C3AED' },
+    { key: 'managers',  value: fmt(managerCount), label: T({ uz: 'MENEJERLAR',         ru: 'МЕНЕДЖЕРОВ',         en: 'MANAGERS' }),           icon: Users,      color: '#F59E0B' },
   ];
 
   const COLS = [
     { key: 'manager',      label: T({ uz: 'Menejer',   ru: 'Менеджер',  en: 'Manager' }),   right: false },
     { key: 'totalUZS',     label: T({ uz: 'Summa UZS', ru: 'Сумма UZS', en: 'Amount UZS' }), right: true },
-    { key: 'invoiceCount', label: T({ uz: 'Hujjatlar', ru: 'Накладных', en: 'Documents' }), right: true },
+    { key: 'invoiceCount', label: T({ uz: 'Hujjatlar', ru: 'Накладных', en: 'Documents' }),  right: true },
   ];
 
-  const hasChart = chartData.length > 0;
-  const hasMgrs  = managers.length > 0;
-
-  const Loading = () => (
-    <div className={styles.emptyRow} style={{ padding: '40px 20px' }}>
-      <div className={styles.spinner} style={{ margin: '0 auto' }} />
-    </div>
-  );
-
   return (
-    <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <div>
-          <h1 className={styles.pageTitle}>{T({ uz: 'Sotuvlar', ru: 'Продажи', en: 'Sales' })}</h1>
-          <p className={styles.pageSub}>{T({ uz: "Menejerlar bo'yicha savdo hisoboti", ru: 'Отчёт менеджеров по продажам', en: 'Sales report by managers' })}</p>
-        </div>
-        <div className={styles.headerControls}>
-          <div className={styles.dateRange}>
-            <Calendar size={13} className={styles.calIcon} />
-            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className={styles.dateInput} />
-            <span className={styles.dateSep}>—</span>
-            <input type="date" value={dateTo}   onChange={e => setDateTo(e.target.value)}   className={styles.dateInput} />
-          </div>
-          <div className={styles.periodTabs}>
-            {PERIODS.map(p => (
-              <button key={p.id}
-                className={`${styles.periodBtn} ${period === p.id ? styles.periodActive : ''}`}
-                onClick={() => setPeriod(p.id)}>{p.label[lang]}</button>
-            ))}
-          </div>
-          <button className={styles.refreshBtn} onClick={() => refetch()} disabled={isFetching}>
-            <RefreshCw size={13} className={isFetching ? styles.spin : ''} />
-          </button>
-        </div>
-      </div>
-
+    <>
       <div className={styles.statsGrid}>
         {STAT_CARDS.map(c => {
           const Icon = c.icon;
@@ -156,7 +129,7 @@ export default function SalesPage() {
               <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
             </div>
           </div>
-          {isLoading ? <Loading /> : !hasChart ? (
+          {isLoading ? <Spinner /> : chartData.length === 0 ? (
             <div className={styles.chartEmpty}><span>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</span></div>
           ) : (
             <div style={{ padding: '0 16px 16px' }}>
@@ -181,7 +154,7 @@ export default function SalesPage() {
               <div className={styles.chartSub}>{dateFrom} — {dateTo}</div>
             </div>
           </div>
-          {isLoading ? <Loading /> : !hasMgrs ? (
+          {isLoading ? <Spinner /> : managers.length === 0 ? (
             <div className={styles.chartEmpty}><span>{T({ uz: "Ma'lumot yo'q", ru: 'Нет данных', en: 'No data' })}</span></div>
           ) : (
             <div style={{ padding: '0 16px 16px' }}>
@@ -205,7 +178,7 @@ export default function SalesPage() {
             <div className={styles.tableCardTitle}>{T({ uz: "Menejerlar bo'yicha hisobot", ru: 'Отчёт по менеджерам', en: 'Manager report' })}</div>
             <div className={styles.tableCardSub}>{dateFrom} — {dateTo}</div>
           </div>
-          {hasMgrs && <span className={styles.rowCount}>{managers.length} {T({ uz: 'menejer', ru: 'менеджеров', en: 'managers' })}</span>}
+          {managers.length > 0 && <span className={styles.rowCount}>{managers.length} {T({ uz: 'menejer', ru: 'менеджеров', en: 'managers' })}</span>}
         </div>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
@@ -214,11 +187,9 @@ export default function SalesPage() {
               {COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{c.label}</th>)}
             </tr></thead>
             <tbody>
-              {isLoading ? (
-                <tr><td colSpan={COLS.length + 1}><Loading /></td></tr>
-              ) : !hasMgrs ? (
-                <tr><td colSpan={COLS.length + 1} className={styles.emptyRow}>{T({ uz: "Ma'lumot topilmadi", ru: 'Данные не найдены', en: 'No data found' })}</td></tr>
-              ) : managers.map((row, i) => (
+              {isLoading ? <tr><td colSpan={4}><Spinner /></td></tr>
+              : managers.length === 0 ? <NoData />
+              : managers.map((row, i) => (
                 <tr key={i} className={styles.tr}>
                   <td className={styles.numTd}>{i + 1}</td>
                   {COLS.map(c => (
@@ -232,6 +203,201 @@ export default function SalesPage() {
           </table>
         </div>
       </div>
+    </>
+  );
+}
+
+/* ── By Items tab ── */
+function ItemsTab({ dateFrom, dateTo }) {
+  const [search, setSearch] = useState('');
+
+  const { data = [], isLoading, isFetching, refetch } = useQuery({
+    queryKey: ['greymix-sales-by-items', dateFrom, dateTo],
+    queryFn: () => dashGreymix.salesByItems({ dateFrom, dateTo }),
+    staleTime: 60000,
+  });
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return data;
+    const q = search.toLowerCase();
+    return data.filter(r =>
+      String(r.itemCode ?? '').toLowerCase().includes(q) ||
+      String(r.itemName ?? r.dscription ?? '').toLowerCase().includes(q)
+    );
+  }, [data, search]);
+
+  const COLS = [
+    { key: 'itemCode',     label: T({ uz: 'Kod',        ru: 'Код',           en: 'Code' }),         right: false },
+    { key: 'itemName',     label: T({ uz: 'Nomi',       ru: 'Наименование',  en: 'Name' }),         right: false, alt: 'dscription' },
+    { key: 'quantity',     label: T({ uz: 'Miqdor',     ru: 'Количество',    en: 'Quantity' }),     right: true,  alt: 'qty' },
+    { key: 'totalUZS',     label: T({ uz: 'Summa UZS',  ru: 'Сумма UZS',     en: 'Amount UZS' }),  right: true },
+    { key: 'invoiceCount', label: T({ uz: 'Hujjatlar',  ru: 'Накладных',     en: 'Documents' }),   right: true,  alt: 'count' },
+  ];
+
+  return (
+    <>
+      <div className={styles.bpFilterBar}>
+        <div className={styles.searchWrap}>
+          <input className={styles.searchInput} placeholder={T({ uz: "Tovar kodi yoki nomi...", ru: 'Код или наименование товара...', en: 'Item code or name...' })}
+            value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <div className={styles.bpTotal}>
+          {T({ uz: 'Jami:', ru: 'Итого:', en: 'Total:' })} <span className={styles.bpTotalValue}>{isLoading ? '…' : filtered.length}</span>
+        </div>
+        <button className={styles.refreshBtn} onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw size={13} className={isFetching ? styles.spin : ''} />
+        </button>
+      </div>
+      <div className={styles.tableCard}>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead><tr>
+              <th className={styles.numTh}>#</th>
+              {COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{c.label}</th>)}
+            </tr></thead>
+            <tbody>
+              {isLoading ? <tr><td colSpan={6}><Spinner /></td></tr>
+              : filtered.length === 0 ? <NoData />
+              : filtered.map((row, i) => (
+                <tr key={i} className={styles.tr}>
+                  <td className={styles.numTd}>{i + 1}</td>
+                  {COLS.map(c => {
+                    const val = row[c.key] ?? (c.alt ? row[c.alt] : null);
+                    return (
+                      <td key={c.key} className={c.right ? styles.tdR : styles.td}>
+                        {c.right ? fmt(val) : (val ?? '—')}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── By Customers tab ── */
+function CustomersTab({ dateFrom, dateTo }) {
+  const [search, setSearch] = useState('');
+
+  const { data = [], isLoading, isFetching, refetch } = useQuery({
+    queryKey: ['greymix-sales-by-customer', dateFrom, dateTo],
+    queryFn: () => dashGreymix.salesByCustomer({ dateFrom, dateTo }),
+    staleTime: 60000,
+  });
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return data;
+    const q = search.toLowerCase();
+    return data.filter(r =>
+      String(r.cardCode ?? r.code ?? '').toLowerCase().includes(q) ||
+      String(r.cardName ?? r.name ?? '').toLowerCase().includes(q)
+    );
+  }, [data, search]);
+
+  const totalUZS = useMemo(() => data.reduce((s, r) => s + (Number(r.totalUZS) || 0), 0), [data]);
+
+  const COLS = [
+    { key: 'cardCode',     label: T({ uz: 'Kod',        ru: 'Код',          en: 'Code' }),         right: false, alt: 'code' },
+    { key: 'cardName',     label: T({ uz: 'Mijoz',      ru: 'Клиент',       en: 'Customer' }),     right: false, alt: 'name' },
+    { key: 'groupName',    label: T({ uz: 'Guruh',      ru: 'Группа',       en: 'Group' }),        right: false, alt: 'group' },
+    { key: 'totalUZS',     label: T({ uz: 'Summa UZS',  ru: 'Сумма UZS',    en: 'Amount UZS' }),  right: true },
+    { key: 'invoiceCount', label: T({ uz: 'Hujjatlar',  ru: 'Накладных',    en: 'Documents' }),   right: true, alt: 'count' },
+  ];
+
+  return (
+    <>
+      <div className={styles.bpFilterBar}>
+        <div className={styles.searchWrap}>
+          <input className={styles.searchInput} placeholder={T({ uz: "Mijoz kodi yoki nomi...", ru: 'Код или наименование клиента...', en: 'Customer code or name...' })}
+            value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <div className={styles.bpTotal}>
+          {T({ uz: 'Jami UZS:', ru: 'Итого UZS:', en: 'Total UZS:' })} <span className={styles.bpTotalValue}>{fmt(totalUZS)}</span>
+        </div>
+        <button className={styles.refreshBtn} onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw size={13} className={isFetching ? styles.spin : ''} />
+        </button>
+      </div>
+      <div className={styles.tableCard}>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead><tr>
+              <th className={styles.numTh}>#</th>
+              {COLS.map(c => <th key={c.key} className={c.right ? styles.thR : styles.th}>{c.label}</th>)}
+            </tr></thead>
+            <tbody>
+              {isLoading ? <tr><td colSpan={6}><Spinner /></td></tr>
+              : filtered.length === 0 ? <NoData />
+              : filtered.map((row, i) => (
+                <tr key={i} className={styles.tr}>
+                  <td className={styles.numTd}>{i + 1}</td>
+                  {COLS.map(c => {
+                    const val = row[c.key] ?? (c.alt ? row[c.alt] : null);
+                    return (
+                      <td key={c.key} className={c.right ? styles.tdR : styles.td}>
+                        {c.right ? fmt(val) : (val ?? '—')}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── Main page ── */
+export default function SalesPage() {
+  const today = new Date().toISOString().slice(0, 10);
+  const firstOfYear = new Date().getFullYear() + '-01-01';
+  const [dateFrom, setDateFrom] = useState(firstOfYear);
+  const [dateTo,   setDateTo]   = useState(today);
+  const [period,   setPeriod]   = useState('day');
+  const [tab,      setTab]      = useState('overview');
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <div>
+          <h1 className={styles.pageTitle}>{T({ uz: 'Sotuvlar', ru: 'Продажи', en: 'Sales' })}</h1>
+          <p className={styles.pageSub}>{T({ uz: 'Savdo hisobotlari', ru: 'Отчёты по продажам', en: 'Sales reports' })}</p>
+        </div>
+        <div className={styles.headerControls}>
+          <div className={styles.dateRange}>
+            <Calendar size={13} className={styles.calIcon} />
+            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className={styles.dateInput} />
+            <span className={styles.dateSep}>—</span>
+            <input type="date" value={dateTo}   onChange={e => setDateTo(e.target.value)}   className={styles.dateInput} />
+          </div>
+          {tab === 'overview' && (
+            <div className={styles.periodTabs}>
+              {PERIODS.map(p => (
+                <button key={p.id}
+                  className={`${styles.periodBtn} ${period === p.id ? styles.periodActive : ''}`}
+                  onClick={() => setPeriod(p.id)}>{p.label[lang]}</button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.tabs}>
+        {TABS.map(t => (
+          <button key={t.id} className={`${styles.tabBtn} ${tab === t.id ? styles.tabActive : ''}`}
+            onClick={() => setTab(t.id)}>{T(t.label)}</button>
+        ))}
+      </div>
+
+      {tab === 'overview'  && <OverviewTab  dateFrom={dateFrom} dateTo={dateTo} period={period} />}
+      {tab === 'items'     && <ItemsTab     dateFrom={dateFrom} dateTo={dateTo} />}
+      {tab === 'customers' && <CustomersTab dateFrom={dateFrom} dateTo={dateTo} />}
     </div>
   );
 }

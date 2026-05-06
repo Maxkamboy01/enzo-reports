@@ -28,6 +28,12 @@
 }
 .dateSep { color: var(--grey-400); }
 
+/* Section tabs */
+.tabs { display: flex; gap: 4px; background: var(--grey-100); border-radius: var(--radius-md); padding: 4px; align-self: flex-start; }
+.tabBtn { padding: 7px 18px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 600; color: var(--grey-500); background: transparent; border: none; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.tabBtn:hover { color: var(--grey-800); }
+.tabActive { background: #fff; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
 .periodTabs { display: flex; gap: 4px; }
 .periodBtn {
   padding: 6px 12px;
